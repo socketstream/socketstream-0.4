@@ -1,0 +1,13 @@
+{
+  "name": "SocketStream_0.4_Example_App",
+  "description": "An awesome real time application",
+  "version": "0.0.1",
+  "author": "Me <me@mydomain.com>",
+  "private": true,
+  "engines": { "node": ">= 0.6.0" },
+  "dependencies": {
+    "engine.io":  "= 0.3.x",
+    "jade":       "= 0.26.x",
+    "stylus":     "= 0.30.x"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "name":         "socketstream-0.4",
+  "description":  "A fast, streaming Node.js framework dedicated to building realtime single-page apps",
+  "version":      "0.4.0experimental",
+  "homepage":     "http://www.socketstream.org",
+  "author":       "Owen Barnes <owen@socketstream.org>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/socketstream/socketstream-0.4"
+  },
+  "contributors": [
+    "Paul Jensen",
+    "Alan Milford",
+    "Addy Osmani",
+    "nponeccop",
+    "Gilbert B Garza",
+    "Craig Jordan Muir",
+    "David Rosen",
+    "Michael Lawson"
+  ],
+  "dependencies": {
+    "colors":           "= 0.6.x",
+    "mux-demux":        "= 3.3.x",
+    "uglify-js":        "= 1.3.x",
+    "oppressor":        "= 0.0.x",
+    "filed":            "= 0.0.x"
+  },
+  "devDependencies": {
+    "mocha":            "= 1.2.1",
+    "should":           "= 0.6.3"
+  },
+  "scripts": {
+    "test": "make test"
+  },
+  "directories":  { "lib": "./lib", "doc": "./doc" },
+  "main":         "./socketstream.js",
+  "engines":      { "node": ">= 0.8.0" },
+  "bin":          { "socketstream4": "./bin/socketstream" }
+}
