@@ -30,12 +30,12 @@ var ss = app.start(server, function(){
 
 // To be implemented:
 
-var Stream = require('stream')
-var tweetStream = app.stream.createWriteStream('tweets')
-tweetStream.readable = true
-setInterval(function(){
-  tweetStream.write('This is a tweet')
-}, 1000)
+// var Stream = require('stream')
+// var tweetStream = app.stream.createWriteStream('tweets')
+// tweetStream.readable = true
+// setInterval(function(){
+//   tweetStream.write('This is a tweet')
+// }, 1000)
 
-tweetStream.pipe(app.connection)
+// tweetStream.pipe(app.connection)
 

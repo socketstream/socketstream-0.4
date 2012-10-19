@@ -84,9 +84,24 @@ Application.prototype.route = function(url, clientOrFn){
   this.routes[url] = clientOrFn
 }
 
-// Create new Router
+// Route incoming HTTP requests to Single Page Clients or hand over to asset/file server
 Application.prototype.router = function(){
-  return require('./lib/http_router')(this)
+  var self = this
+
+  if (!self.routes['/']) throw new Error("You must specify a base route: e.g. app.route('/', mainClient)")
+  var matchRoute = require('./lib/http/resolve_route')
+  function isSystem (req) { return req.url.substring(0,5) === '/_ss/' }
+  function isFile (req) { return req.url.indexOf('.') >= 0 }
+  
+  return function(req, res) {
+    if (isSystem(req) || isFile(req)) return self.serveAssets(req).pipe(res)
+    // If a route is found, exec function or serve Single Page Client
+    if (handler = matchRoute(self.routes, req.url)) {
+      typeof handler === 'function' ? handler(req, res) : handler.view(req).pipe(res)
+    } else {
+      // TODO: Show 404
+    }
+  }
 }
 
 // Define new Code PreProcessor
@@ -100,7 +115,7 @@ Application.prototype.preprocessor = function(fileExtension, mod){
 
 // Serve CSS, JS and static assets over HTTP
 Application.prototype.serveAssets = function(request){
-  return require('./lib/asset_server')(this, request)
+  return require('./lib/http/asset_server')(this, request)
 }
 
 // Start listening for Websocket Messages
