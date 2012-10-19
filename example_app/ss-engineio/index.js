@@ -54,14 +54,11 @@ module.exports = function(app, options) {
       // Process incoming messages
       socket.on('message', function(msg){
 
-        // TODO: Figure out how to get a client's IP from Engine.IO
-        var clientIp = 'XXX.XXX.XXX.XXX'
-
         // Send meta details to the responder
         var meta = {
           socketId:   socket.id,
           sessionId:  '12345',  // TODO: implement sessions
-          clientIp:   clientIp,
+          clientIp:   socket.request.connection.remoteAddress,
           transport:  'engineio'
         };
 
