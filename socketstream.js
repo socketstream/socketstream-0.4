@@ -8,6 +8,7 @@
 
 
 var fs = require('fs'),
+    path = require('path'),
     EventEmitter = require('events').EventEmitter,
     MuxDemux = require('mux-demux'),
     Clients = require('./lib/clients')
@@ -90,11 +91,11 @@ Application.prototype.router = function(){
 
   if (!self.routes['/']) throw new Error("You must specify a base route: e.g. app.route('/', mainClient)")
   var matchRoute = require('./lib/http/resolve_route')
-  function isSystem (req) { return req.url.substring(0,5) === '/_ss/' }
-  function isFile (req) { return req.url.indexOf('.') >= 0 }
+  function isStatic (req) { return req.url.indexOf('.') >= 0 }
   
   return function(req, res) {
-    if (isSystem(req) || isFile(req)) return self.serveAssets(req).pipe(res)
+    if (self.isAssetRequest(req)) return self.serveAssets(req).pipe(res)
+    if (isStatic(req)) return self.serveStatic(req, 'client/public').pipe(res)
     // If a route is found, exec function or serve Single Page Client
     if (handler = matchRoute(self.routes, req.url)) {
       typeof handler === 'function' ? handler(req, res) : handler.view(req).pipe(res)
@@ -110,12 +111,22 @@ Application.prototype.preprocessor = function(fileExtension, mod){
   (typeof fileExtension === 'object' ? fileExtension : [fileExtension]).forEach(function(ext){
     self.preprocessors[ext] = mod;
   })
-  return true;
+  return true
 }
 
-// Serve CSS, JS and static assets over HTTP
+// Test if this looks like an asset request
+Application.prototype.isAssetRequest = function(request){
+  return request.url.substring(0,5) === '/_ss/'
+}
+
+// Serve CSS and JS over HTTP
 Application.prototype.serveAssets = function(request){
-  return require('./lib/http/asset_server')(this, request)
+  return require('./lib/http/asset_server')(this.root, this.clients, this.preprocessors, request)
+}
+
+// Serve static assets (e.g. images) over HTTP
+Application.prototype.serveStatic = function(request, dir){
+  return require('filed')(path.join(this.root, dir, request.url))
 }
 
 // Start listening for Websocket Messages
@@ -135,7 +146,7 @@ Application.prototype.start = function(httpServer, fn) {
 
 // Create a new instance
 module.exports = function(){
-  return new Application;
+  return new Application
 }
 
 

@@ -114,7 +114,7 @@ var SocketStream = require('socketstream'),
 * **app.client**(viewPath, assetPaths) : **Define a new Single Page Client**
   * viewPath _(String)_ : file name of main `.html` (or `.jade` etc) file to be served
   * assetPaths _(Object)_ : specifies a list of assets to automatically serve (`css`, `mods`, `libs`) in the form of Arrays
-  * Returns _(Object)_ : a Single Page Client object
+  * Returns _(Object)_ : a Single Page Client object (API documented below)
 * **app.preprocessor**(fileExtension, module) : **Add a Code Preprocessor (Formatter)**
   * Tells SocketStream to automatically pipe() files of `fileExtension` through `module` before output
   * fileExtension _(String)_ : a file extension (e.g. `jade`)
@@ -133,6 +133,25 @@ var SocketStream = require('socketstream'),
   * Returns a very simple function that will recursively route incoming requests until a matching client (as specified with the `app.route()` function) can be found
   * Returns _(Function)_ : a function accepting `req` and `res` params, suitable for passing to `http.createServer()`
 
+
+### `client` Methods
+
+`app.client()` returns a new Single Page Client. This is the API
+
+* **client.html**(request) : **Return the raw HTML (unprocessed)**
+  * request _(HttpRequest)_
+  * Returns _(Stream)_ : a stream of HTML which can be piped to `response`
+* **client.serveAssets**(request) : **Serve CSS/JS assets**
+  * request _(HttpRequest)_
+  * Returns _(Stream)_ : a stream of CSS or JS which can be piped to `response`
+* **client.serveStatic**(request, dir) : **Serve Static Files**
+  * request _(HttpRequest)_
+  * dir _(String)_ : root dir to serve static files from (e.g. `/client/public`)
+  * Returns _(Stream)_ : a stream of static file data which can be piped to `response`
+* **client.view**(request) : **Serve processed HTML**
+  * This is the recommended way to serve HTML views. It injects tags and preprocesses the HTML if required
+  * request _(HttpRequest)_
+  * Returns _(Stream)_ : a stream of HTML which can be piped to `response`
 
 
 ## Tutorial
