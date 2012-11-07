@@ -1,0 +1,11 @@
+{
+  "name": "jade-stream",
+  "description": "A simple streaming wrapper around Jade",
+  "version": "0.0.1",
+  "author": "Owen Barnes <owen@socketstream.org>",
+  "private": true,
+  "engines": { "node": ">= 0.8.0" },
+  "dependencies": {
+    "jade":  "= 0.26.x"
+  }
+}

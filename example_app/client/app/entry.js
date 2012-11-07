@@ -1,11 +1,12 @@
 // SocketStream 0.4 Entry file
 
 var SocketStream = require('socketstream'),
-    ss = SocketStream();
+    ss = SocketStream()
 
 module.exports = function(){
 
-  // Connect to websocket
-  console.log('Working!')
+  window.ss = ss.services
+
+  require('./chat')
 
 }

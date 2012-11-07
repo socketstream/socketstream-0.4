@@ -5,6 +5,9 @@ var http = require('http'),
     SocketStream = require('../socketstream'),
     app = SocketStream()
 
+// Log to console
+app.log.debug = console.log
+
 // Support Jade
 app.preprocessor('jade', require('./jade-stream')())
 app.preprocessor('styl', require('./stylus-stream')())
@@ -15,7 +18,7 @@ app.transport(require('./ss-engineio'))
 // Define a Single Page Client
 var mainClient = app.client('client/views/main.jade', {
   css:  ['client/css/reset.css', 'client/css/main.styl'],
-  code: ['client/code'],
+  mods: ['client/app'],
   libs: ['client/libs/jquery.min.js'],
   tmpl: ['client/tmpl']
 })
@@ -23,7 +26,13 @@ var mainClient = app.client('client/views/main.jade', {
 // Serve it 
 app.route('/', mainClient)
 
-var server = http.createServer(app.router()).listen(3000, '127.0.0.1')
+// Define Services to run over the websocket
+app.service('rpc', {root: '/server/rpc'})
+app.service('liveReload', {dirs: '/client'})
+app.service('pubsub')
+
+// Start HTTP Server
+var httpServer = http.createServer(app.router()).listen(3000, '127.0.0.1')
 
 // Lond way of doing the same thing:
 // var server = http.createServer(function (req, res) {
@@ -38,20 +47,11 @@ var server = http.createServer(app.router()).listen(3000, '127.0.0.1')
 
 // }).listen(3000, '127.0.0.1')
 
+
 // Start listening over the websocket
-var ss = app.start(server, function(){
+var ss = app.start(httpServer, function(){
   console.log('Server running at http://127.0.0.1:3000');  
 })
 
 
-// To be implemented:
-
-// var Stream = require('stream')
-// var tweetStream = app.stream.createWriteStream('tweets')
-// tweetStream.readable = true
-// setInterval(function(){
-//   tweetStream.write('This is a tweet')
-// }, 1000)
-
-// tweetStream.pipe(app.connection)
 

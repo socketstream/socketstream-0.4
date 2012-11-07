@@ -10,8 +10,8 @@
 var fs = require('fs'),
     path = require('path'),
     EventEmitter = require('events').EventEmitter,
-    MuxDemux = require('mux-demux'),
-    Clients = require('./lib/clients')
+    ClientCode = require('./lib/client/code'),
+    Switchboard = require('./lib/switchboard')
 
 
 function Application(options){
@@ -21,10 +21,11 @@ function Application(options){
   // Set options
   self.options = (options || {})
 
-  // Store things we need to share between modules
-  self.preprocessors = {}
-  self.responders = {}
-  self.routes = {}
+  // Store things we need to share between modules and external services
+  self.clients =        []
+  self.preprocessors =  {}
+  self.routes =         {}
+  self.services =       {}
 
   // Set App Root Dir
   self.root = process.cwd().replace(/\\/g, '/')
@@ -42,8 +43,11 @@ function Application(options){
     error:  console.error
   };
 
-  // Any operation performed on self.clients is applied to all Single Page Clients
-  self.clients = new Clients
+  // Code to be sent to all clients
+  self.clients.code = new ClientCode
+
+  // Message Switchboard (handles one to many WS/stream relationships)
+  self.switchboard = new Switchboard
 
   // Load System Defaults
   require('./lib/load_defaults')(self)
@@ -51,31 +55,44 @@ function Application(options){
   // System Event Bus - allows apps to respond to system events
   self.eb = new EventEmitter
 
-  // Websocket experimentation so far... all likely to change below this line
-  self.requestProcessor = require('./lib/message_processor')()
-  self.stream = MuxDemux()
-
-  return self;
-
 }
 
 // Setup Websocket Transport
 Application.prototype.transport = function(mod, options){
-  this._transport = mod(this, options)
+  this._transport = mod(this, this.switchboard)
   return this._transport
 }
 
-// Use new Request Responder
-Application.prototype.responder = function(name, mod, options){
-  this.responders[name] = mod(this, options)
-  return this.responders[name]
+// Use new SocketStream Websocket Service
+Application.prototype.service = function(service, options){
+  options = options || {}
+  var self = this
+  
+  if (typeof service == 'string') service = require('./lib/services/' + service)(self, options)
+  var serverStream = self.switchboard.createService()
+
+  // Allow services to be exposed (to be shared between other services)
+  serverStream.expose = function(name, fn) {
+    self.services[name] = fn
+  }
+
+  // By default we send client code to all clients. Alternatively pass an array of clients
+  if (service.client) {
+    var clients = options.clients || [self.clients]
+    clients.forEach(function(client){
+      client.code.sendCode("require('socketstream')().registerService(" + serverStream.id + ", " + service.client.toString() + ");")
+    })
+  }
+  
+  // Return any server-side API
+  return service.server(serverStream)
 }
 
 // Define new Single Page Client
 Application.prototype.client = function(viewName, paths){
   var client = require('./lib/client');
   var thisClient = new client(this, viewName, paths);
-  this.clients.add(thisClient);
+  this.clients.push(thisClient);
   return thisClient;
 }
 
@@ -94,7 +111,7 @@ Application.prototype.router = function(){
   function isStatic (req) { return req.url.indexOf('.') >= 0 }
   
   return function(req, res) {
-    if (self.isAssetRequest(req)) return self.serveAssets(req).pipe(res)
+    if (self.isAssetRequest(req)) return self.serveSystem(req).pipe(res)
     if (isStatic(req)) return self.serveStatic(req, 'client/public').pipe(res)
     // If a route is found, exec function or serve Single Page Client
     if (handler = matchRoute(self.routes, req.url)) {
@@ -119,8 +136,17 @@ Application.prototype.isAssetRequest = function(request){
   return request.url.substring(0,5) === '/_ss/'
 }
 
+// Serve CSS, JS and Static files
+Application.prototype.serveAssets = function(req, staticDir){
+  if (this.isAssetRequest(req)) {
+    return this.serveSystem(req)
+  } else {
+    return this.serveStatic(req, staticDir)
+  }
+}
+
 // Serve CSS and JS over HTTP
-Application.prototype.serveAssets = function(request){
+Application.prototype.serveSystem = function(request){
   return require('./lib/http/asset_server')(this.root, this.clients, this.preprocessors, request)
 }
 
@@ -131,24 +157,15 @@ Application.prototype.serveStatic = function(request, dir){
 
 // Start listening for Websocket Messages
 // Pass the httpServer so the transport can bind to it
-Application.prototype.start = function(httpServer, fn) {
-
-  this.connection = this._transport(httpServer)
-
-  // Wire up transport to message handler
-  this.connection.pipe(this.requestProcessor)
-
-  // Allow incoming streams of published data through to transport 
-  this.stream.pipe(this.connection)
-
-  fn()
+Application.prototype.start = function(httpServer, cb) {
+  this.sockets = this._transport(httpServer)
+  cb()
 }
 
 // Create a new instance
-module.exports = function(){
+var SocketStream = function(){
   return new Application
 }
-
 
 
 // Helpers
@@ -161,3 +178,5 @@ function loadPackageJSON () {
   };
 };
 
+
+module.exports = SocketStream

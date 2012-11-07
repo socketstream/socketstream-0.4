@@ -2,30 +2,25 @@
 // Note we will be able to simplify a lot of this code once Engine.IO supports a streaming interface
 
 var Stream = require('stream'),
-    engine = require('engine.io');
+    engine = require('engine.io')
 
-var openSocketsById = {};
+var openSockets = {}
 
 module.exports = function(app, options) {
 
-  if (options == null) options = {};
+  if (options == null) options = {}
   
-  options.client = options.client || {};
-  options.server = options.server || {};
+  options.client = options.client || {}
+  options.server = options.server || {}
 
   // Send Engine.IO client code to browser
-  app.clients.code.sendLibrary(__dirname + '/client_lib.js');
+  app.clients.code.sendLibrary(__dirname + '/client_lib.js')
 
   // Send small wrapper module to make it obey the standard interface
-  app.clients.code.sendModule('socketstream-transport', __dirname + '/client_wrapper.js');
+  app.clients.code.sendModule('socketstream-transport', __dirname + '/client_wrapper.js')
 
   // Return function to connect once HTTP server is started
-  return function(httpServer, muxdemux) {
-
-    // Implement very basic Streams wrapper until Engine.IO supports this
-    var s = new Stream
-    s.readable = true
-    s.writable = true
+  return function(httpServer) {
 
     // Start Engine.IO server
     var io = engine.attach(httpServer);
@@ -33,23 +28,13 @@ module.exports = function(app, options) {
     // // Enable Engine.IO to be configured
     // if (options.server) config.io(io);
 
-    // Allow data to be sent to all connected clients
-    // TODO: Find the best way to only send to *specific* clients
-    // E.g. those subscribed to a particular channel
-    s.write = function(buf) {
-
-      console.log('writing to websocket')
-
-      for (id in io.clients) {
-        io.clients[id].send(buf)
-      }
-
-
-    }
-
     io.on('connection', function(socket) {
 
-      app.eb.emit('ss:websocket:client:connect', socket.sessionId, socket.id);
+      var connectionStream = new Stream()
+      connectionStream.readable = true
+      connectionStream.writable = true
+
+      app.eb.emit('ss:websocket:client:connect', socket.sessionId, socket.id)
 
       // Process incoming messages
       socket.on('message', function(msg){
@@ -58,28 +43,40 @@ module.exports = function(app, options) {
         var meta = {
           socketId:   socket.id,
           sessionId:  '12345',  // TODO: implement sessions
-          clientIp:   socket.request.connection.remoteAddress,
+          //clientIp:   socket.request.connection.remoteAddress,
           transport:  'engineio'
-        };
+        }
 
         // Send through to message processor
-        s.emit('data', [msg, meta])
+        connectionStream.emit('data', msg)
 
-      });
-
+      })
 
       // Notify Event Bus when a client disconnects
       socket.on('close', function() {
-        app.eb.emit('ss:websocket:client:disconnect', socket.sessionId, socket.id);
-      });
+        app.eb.emit('ss:websocket:client:disconnect', socket.sessionId, socket.id)
+        delete openSockets[socket.id]
+      })
 
       //return socket.emit('ready');
 
-    });
+      connectionStream.write = function(buf) {
+        socket.send(buf)
+      }
 
-    return s
+      // Define streams
+      var mdm = app.switchboard.createClient(socket.id)
+
+      // Wire it up
+      mdm.pipe(connectionStream)
+      connectionStream.pipe(mdm)
+
+      openSockets[socket.id] = socket
+
+    })
+
+    return openSockets
 
   }
-
 }
 

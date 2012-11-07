@@ -1,8 +1,8 @@
 # SocketStream 0.4 Early Experimentation
 
-I'm releasing this early code in conjunction with my NodeDublin.com presentation (video coming soon) to demonstrate the new direction I wish to take SocketStream in and allow others to contribute.
+I'm releasing this early code to demonstrate the new direction I wish to take SocketStream in and allow others to contribute.
 
-What you see here is only a subset of the work I've done towards 0.4 so far, completely re-written to support Node Streams throughout. The only thing that works at the moment is the view & CSS asset serving. All the super cool websocket stuff should be working over the next week or two with the rest following shortly after. Expect frequent commits.
+Right now we have basic client-side asset serving (excluding templates) working. We also have basic PubSub, RPC and Live Reload working over the websocket. These are all implemented as Services (the new name for Request Responders), however the API will need to change to allow each service to be tested. There are many big problems still to solve such as how best to do sessions, auth, and connection status. Expect frequent commits.
 
 If you see a better way to architect or design something, **please** let me know or submit a pull request. Nothing is set in stone at this stage and my primary concern is getting the design right for the long term.
 
@@ -20,7 +20,7 @@ If you see a better way to architect or design something, **please** let me know
 * lazy-load only the parts you choose to use
 * chooses simplicity and high performance over SEO compatibility
 * everything that can be a standard Node.js Stream should be
-* provide APIs to support Models, Presence and more (Request Responders)
+* provide APIs to support Models, Presence and more (as Stream Services)
 * only absolute essentials live in the core
 * personal tastes (e.g. CoffeeScript) supported via optional modules
 
@@ -36,20 +36,19 @@ Note: I've deliberately put this code in a new repo so we can discuss crazy new 
 
 ## Major TODOs
 
-* finish work on serving client assets (code and templates)
+* finish work on serving client assets (mostly templates)
 * work out how to pass meta data to streams (e.g. stylus-stream needs to know a file's dir)
-* make websockets work, duh :) (i.e. integrate MuxDemux if possible)
-* figure out the best way to do RPC over streams
+* find a better way to send mux-demux using browserify
 * sessions
-* live reload
+* RPC middleware
+* handle connection status
 * client-side templates
-* pub/sub and channel subscriptions
-* asset packing
+* finish pub/sub and channel subscriptions
+* finish asset packing
 * cache assets in production
 * write tests for modules which are unlikely to change
-* request responders (modules that deliver code to the client and enable easy testing)
 * make some important decisions on future Connect / middleware compatibility
-* finalize new Request Responder interface to allow testing
+* finalize new Stream Service interface to allow testing
 * change `ss-engineio` to support Engine.IO's forthcoming Streams interface (when ready)
 * investigate PhoneGap compatibility
 * add lots of error handling etc like we had in 0.3
@@ -107,6 +106,11 @@ var SocketStream = require('socketstream'),
 * **app.transport**(module) : **Specify a websocket transport module**
   * Specify which WebSocket (or other persistent) transport should be used (e.g. Engine.IO)
   * module _(Function)_ : SocketStream-compatible wrapper around a transport
+* **app.service**(moduleOrName, options) : **Use a Websocket Service Stream**
+  * Each new Service establishes a full duplex stream on the client and server and can optionally send code to the client and return a server-side API
+  * moduleOrName _(String)_ : When String, load an internal (bundled) Stream Service of that name
+  * moduleOrName _(Object)_ : When Object, define a new Service by passing 'server' and 'client' functions
+  * options _(Object)_ : Pass an options object to the Service
 
 
 #### Single Page Clients
@@ -418,19 +422,20 @@ app.route('/', function(req, res){
 
 That's all for now. I'm building the API Guide and Tutorial bit by bit as each section is complete and I'm reasonably happy with the API.
 
-Come back soon to find out how to stream data over the websocket and much more.
+I will document the new `app.service()` command soon.
 
 
 
 ## Major changes since 0.3 so far
 
-* vanilla JavaScript for maximum readability
-* no need to structure your app dir in a particular way (though still recommended!)
-* more emphasis on providing an API and Tutorial and less on generating / modifying files
-* asset tags are now injected into HTML automatically
-* supports multiple instances
-* silent output by default
-
+* Vanilla JavaScript for maximum readability
+* Request Responders are now provisionally called Services
+* Live Reload, PubSub and RPC are now implemented as bundled Services (all lazy-loaded)
+* No need to structure your app dir in a particular way (though still recommended!)
+* More emphasis on providing an API and Tutorial and less on generating / modifying files
+* Asset tags are now injected into HTML automatically
+* Supports multiple instances
+* No longer logs to `console.log` by default
 
 
 ## License 
