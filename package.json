@@ -32,7 +32,7 @@
     "should":           "= 0.6.3"
   },
   "scripts": {
-    "test": "make test"
+    "test": "node_modules/.bin/mocha test"
   },
   "directories":  { "lib": "./lib", "doc": "./doc" },
   "main":         "./socketstream.js",
