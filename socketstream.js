@@ -1,5 +1,5 @@
 /*
-   
+
    SocketStream 0.4 (Experimental!)
    --------------------------------
    Keep track of Single Page Clients and allow actions to be performed on them all
@@ -28,7 +28,7 @@ function Application(options){
   self.services =       {}
 
   // Set App Root Dir
-  self.root = process.cwd().replace(/\\/g, '/')
+  self.root = options.root ? options.root : process.cwd().replace(/\\/g, '/')
 
   // Set environment
   self.env = (process.env['NODE_ENV'] || 'development').toLowerCase()
@@ -67,7 +67,7 @@ Application.prototype.transport = function(mod, options){
 Application.prototype.service = function(service, options){
   options = options || {}
   var self = this
-  
+
   if (typeof service == 'string') service = require('./lib/services/' + service)(self, options)
   var serverStream = self.switchboard.createService()
 
@@ -83,15 +83,24 @@ Application.prototype.service = function(service, options){
       client.code.sendCode("require('socketstream')().registerService(" + serverStream.id + ", " + service.client.toString() + ");")
     })
   }
-  
+
   // Return any server-side API
   return service.server(serverStream)
 }
 
 // Define new Single Page Client
-Application.prototype.client = function(viewName, paths){
+Application.prototype.client = function(viewName, paths, baseDir){
   var client = require('./lib/client');
-  var thisClient = new client(this, viewName, paths);
+  if(baseDir) {
+    viewName = path.join(baseDir, viewName);
+    Object.keys(paths).forEach(function(k) {
+      paths[k].forEach(function(p) {
+        paths[k][p] = path.join(baseDir, paths[k][p]);
+      })
+    })
+  }
+  var thisClient = new client(this, viewName, paths, baseDir);
+  thisClient.baseDir = baseDir;
   this.clients.push(thisClient);
   return thisClient;
 }
@@ -109,11 +118,12 @@ Application.prototype.router = function(){
   if (!self.routes['/']) throw new Error("You must specify a base route: e.g. app.route('/', mainClient)")
   var matchRoute = require('./lib/http/resolve_route')
   function isStatic (req) { return req.url.indexOf('.') >= 0 }
-  
+
   return function(req, res) {
     if (self.isAssetRequest(req)) return self.serveSystem(req).pipe(res)
     if (isStatic(req)) return self.serveStatic(req, 'client/public').pipe(res)
     // If a route is found, exec function or serve Single Page Client
+    var handler;
     if (handler = matchRoute(self.routes, req.url)) {
       typeof handler === 'function' ? handler(req, res) : handler.view(req).pipe(res)
     } else {
@@ -159,12 +169,17 @@ Application.prototype.serveStatic = function(request, dir){
 // Pass the httpServer so the transport can bind to it
 Application.prototype.start = function(httpServer, cb) {
   this.sockets = this._transport(httpServer)
-  cb()
+  httpServer.on('listening', function() {
+    if(cb)
+      cb(httpServer.address().port)
+    if(process.send)
+      process.send({'SOCKETSTREAM_PORT': httpServer.address().port})
+  });
 }
 
 // Create a new instance
-var SocketStream = function(){
-  return new Application
+var SocketStream = function(options){
+  return new Application(options)
 }
 
 
