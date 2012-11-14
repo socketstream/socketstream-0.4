@@ -93,12 +93,12 @@ Application.prototype.client = function(viewName, paths, baseDir){
   var client = require('./lib/client');
   if(baseDir) {
     viewName = path.join(baseDir, viewName);
-  }
-  Object.keys(paths).forEach(function(k) {
-    paths[k].forEach(function(p) {
-      paths[k][p] = path.join(baseDir, paths[k][p]);
+    Object.keys(paths).forEach(function(k) {
+      paths[k].forEach(function(p) {
+        paths[k][p] = path.join(baseDir, paths[k][p]);
+      })
     })
-  })
+  }
   var thisClient = new client(this, viewName, paths, baseDir);
   thisClient.baseDir = baseDir;
   this.clients.push(thisClient);
