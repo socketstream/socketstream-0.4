@@ -1,3 +1,5 @@
+'use strict'
+
 /*
 
    SocketStream 0.4 (Experimental!)
@@ -5,7 +7,6 @@
    Keep track of Single Page Clients and allow actions to be performed on them all
 
 */
-
 
 var fs = require('fs'),
     path = require('path'),
@@ -28,7 +29,7 @@ function Application(options){
   self.services =       {}
 
   // Set App Root Dir
-  self.root = options.root ? options.root : process.cwd().replace(/\\/g, '/')
+  self.root = self.options.root ? self.options.root : process.cwd().replace(/\\/g, '/')
 
   // Set environment
   self.env = (process.env['NODE_ENV'] || 'development').toLowerCase()
@@ -113,7 +114,7 @@ Application.prototype.route = function(url, clientOrFn){
 
 // Route incoming HTTP requests to Single Page Clients or hand over to asset/file server
 Application.prototype.router = function(){
-  var self = this
+  var handler, self = this
 
   if (!self.routes['/']) throw new Error("You must specify a base route: e.g. app.route('/', mainClient)")
   var matchRoute = require('./lib/http/resolve_route')
@@ -168,6 +169,7 @@ Application.prototype.serveStatic = function(request, dir){
 // Start listening for Websocket Messages
 // Pass the httpServer so the transport can bind to it
 Application.prototype.start = function(httpServer, cb) {
+  if (!this._transport) { throw new Error('The app.start() command can only be called once the Websocket Transport has been defined. Set with app.transport()')}
   this.sockets = this._transport(httpServer)
   httpServer.on('listening', function() {
     if(cb)
