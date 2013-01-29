@@ -90,18 +90,26 @@ Application.prototype.service = function(service, options){
 }
 
 // Define new Single Page Client
-Application.prototype.client = function(viewName, paths, baseDir){
-  var client = require('./lib/client');
-  if(baseDir) {
-    viewName = path.join(baseDir, viewName);
+Application.prototype.client = function(viewName, paths, options){
+
+  options = options || {};
+
+  var Client = require('./lib/client');
+
+  // Prepend base directory to all paths
+  if(options.baseDir) {
+    viewName = path.join(options.baseDir, viewName);
     Object.keys(paths).forEach(function(k) {
+      var newPaths = []
       paths[k].forEach(function(p) {
-        paths[k][p] = path.join(baseDir, paths[k][p]);
+        newPaths.push(path.join(options.baseDir, p));
       })
+      paths[k] = newPaths;
     })
-  }
-  var thisClient = new client(this, viewName, paths, baseDir);
-  thisClient.baseDir = baseDir;
+  };
+
+  var thisClient = new Client(this, viewName, paths);
+  thisClient.baseDir = options.baseDir;
   this.clients.push(thisClient);
   return thisClient;
 }
