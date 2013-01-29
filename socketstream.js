@@ -100,11 +100,9 @@ Application.prototype.client = function(viewName, paths, options){
   if(options.baseDir) {
     viewName = path.join(options.baseDir, viewName);
     Object.keys(paths).forEach(function(k) {
-      var newPaths = []
-      paths[k].forEach(function(p) {
-        newPaths.push(path.join(options.baseDir, p));
+      paths[k].forEach(function(p, i) {
+        paths[k][i] = path.join(options.baseDir, p);
       })
-      paths[k] = newPaths;
     })
   };
 
