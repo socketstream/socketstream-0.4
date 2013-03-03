@@ -5,10 +5,13 @@
   "author": "Me <me@mydomain.com>",
   "private": true,
   "engines": { "node": ">= 0.6.0" },
+  "scripts": {
+    "start": "node app.js"
+  },
   "dependencies": {
-    "engine.io":  "= 0.3.x",
-    "jade":       "= 0.26.x",
-    "stylus":     "= 0.30.x",
-    "nib":     "= 0.8.2"
+    "engine.io":  "= 0.4.x",
+    "jade":       "= 0.28.x",
+    "stylus":     "= 0.32.x",
+    "nib":        "= 0.9.x"
   }
 }
