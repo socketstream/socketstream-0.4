@@ -2,7 +2,7 @@
 
 SocketStream is a Realtime Web Framework with a focus on high performance and extensibility.
 
-[View Latest Changes](https://github.com/socketstream/socketstream-0.4/blob/master/HISTORY.md))
+[View Latest Changes](https://github.com/socketstream/socketstream-0.4/blob/master/HISTORY.md)
 
 
 ## What's going on here?

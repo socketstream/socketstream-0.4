@@ -3,7 +3,7 @@
 // Engine.IO Websocket Transport
 
 var engine = require('engine.io');
-var parser = require('ss-message-parser')(); // used to multiplex messages from multiple services
+var parser = require('../ss-message-parser')(); // used to multiplex messages from multiple services
 
 
 module.exports = function(options) {
