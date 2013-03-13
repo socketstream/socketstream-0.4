@@ -1,0 +1,9 @@
+{
+  "name": "socketstream-client",
+  "description": "Client to connect to a SocketStream 0.4 realtime server",
+  "version": "0.0.1",
+  "author": "Owen Barnes <owen@socketstream.org>",
+  "engines": { "node": ">= 0.10.0" },
+  "dependencies": {
+  }
+}

@@ -1,57 +1,43 @@
-'use strict'
+"use strict";
 
-// Example SocketStream 0.4 Application
-// Note: API is subject to change at this stage
+/*
 
-var http = require('http'),
-    path = require('path'),
-    SocketStream = require('../socketstream'),
-    app = SocketStream()
+  Example SocketStream 0.4 Application
+  ------------------------------------
 
-// Log to console
-app.log.debug = console.log
+  I've separated the asset-serving and realtime elements of SocketStream
+  so each can be scaled-up separately to meet demand.
 
-// Support Jade
-app.preprocessor('jade', require('./jade-stream')())
-app.preprocessor('styl', require('./stylus-stream')())
+  When 0.4 is fully released the example app generated will contain everything
+  in one file. For now I'm isolating frontend and backend to aid development.
 
-// Setup Websocket Transport
-app.transport(require('./ss-engineio'))
+*/
 
-// Define a Single Page Client
-var mainClient = app.client('client/views/main.jade', {
-  css:  ['client/css/reset.css', 'client/css/main.styl'],
-  mods: ['client/app'],
-  libs: ['client/libs/jquery.min.js'],
-  tmpl: ['client/tmpl']
-}, __dirname)
 
-// Serve it
-app.route('/', mainClient)
+var spawn = require('child_process').spawn,
 
-// Define Services to run over the websocket
-app.service('rpc', {root: '/server/rpc'})
-app.service('liveReload', {dirs: '/client'})
-app.service('pubsub')
+    // Standalone Asset Server
+    assetServer = spawn('node', ['scripts/asset_server']),
 
-// Start HTTP Server
-var httpServer = http.createServer(app.router()).listen(3000, '127.0.0.1')
+    // Express-based Asset Server
+    //expressServer = spawn('node', ['scripts/express_example']),
 
-// Long way of doing the same thing:
-// var server = http.createServer(function (req, res) {
+    // The Realtime (Websocket Server) which runs on a different port
+    realtimeServer = spawn('node', ['scripts/realtime_server']);
 
-//   if (req.url === '/') {
-//     mainClient.view(req).pipe(res)
-//   } else if (app.isAssetRequest(req)) {
-//     app.serveAssets(req).pipe(res)
-//   } else {
-//     app.serveStatic(req, 'client/public').pipe(res)
-//   }
 
-// }).listen(3000, '127.0.0.1')
+// EITHER start the Standalone Asset server OR the Express Server
+console.log('Starting Asset Server...');
+startServer(assetServer);
+//startServer(expressServer);
 
-// Start listening over the websocket
-var ss = app.start(httpServer, function(){
-  console.log('Server running at http://127.0.0.1:3000');  
-})
+// Always Start the Realtime/Websocket Server
+console.log('Starting Realtime Server...');
+startServer(realtimeServer);
 
+
+function startServer(childProcess) {
+  childProcess.stdin.end();
+  childProcess.stderr.pipe(process.stderr);
+  childProcess.stdout.pipe(process.stdout);
+}

@@ -1,0 +1,10 @@
+{
+  "name": "ss-rpc",
+  "description": "RPC Service for SocketStream 0.4",
+  "version": "0.0.1",
+  "author": "Owen Barnes <owen@socketstream.org>",
+  "engines": { "node": ">= 0.10.0" },
+  "dependencies": {
+    "apitree": "= 1.1.0"
+  }
+}

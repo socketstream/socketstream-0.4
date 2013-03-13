@@ -3,7 +3,7 @@
 // Delete this file once you've seen how the demo works
 
 // Listen out for newMessage events coming from the server
-ss.events.on('newMessage', function(message) {
+ss.pubsub.on('newMessage', function(message) {
 
   // Example of using the Hogan Template in client/templates/chat/message.jade to generate HTML for each message
   // var html = ss.tmpl['chat-message'].render({
@@ -13,7 +13,6 @@ ss.events.on('newMessage', function(message) {
 
   // Templates not implemented yet so we're just doing basic string concat for now
   var html = '<p><span class="time">' + timestamp() + '</span><span class="message">' + message + '</span></p>'
-
 
   // Append it to the #chatlog div and show effect
   return $(html).hide().appendTo('#chatlog').slideDown();

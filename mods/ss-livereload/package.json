@@ -1,0 +1,10 @@
+{
+  "name": "ss-livereload",
+  "description": "Live Reload Service for SocketStream 0.4",
+  "version": "0.0.1",
+  "author": "Owen Barnes <owen@socketstream.org>",
+  "engines": { "node": ">= 0.10.0" },
+  "dependencies": {
+    "chokidar": "= 0.5.x"
+  }
+}

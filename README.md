@@ -1,10 +1,13 @@
 # SocketStream 0.4 Early Experimentation
 
-I'm releasing this early code to demonstrate the new direction I wish to take SocketStream in and allow others to contribute.
+SocketStream is a Realtime Web Framework with a focus on high performance and extensibility.
 
-Right now we have basic client-side asset serving (excluding templates) working. We also have basic PubSub, RPC and Live Reload working over the websocket. These are all implemented as Services (the new name for Request Responders), however the API will need to change to allow each service to be tested. There are many big problems still to solve such as how best to do sessions, auth, and connection status. Expect frequent commits.
+[View Latest Changes](https://github.com/socketstream/socketstream-0.4/blob/master/HISTORY.md))
 
-If you see a better way to architect or design something, **please** let me know or submit a pull request. Nothing is set in stone at this stage and my primary concern is getting the design right for the long term.
+
+## What's going on here?
+
+I'm releasing previews of 0.4 as it takes shape over the coming months. While the code here is incomplete and subject to change, you should always be able to run the example app (see below for instructions).
 
 
 ## Goals
@@ -19,10 +22,29 @@ If you see a better way to architect or design something, **please** let me know
 * idiomatic Node.js code style throughout
 * lazy-load only the parts you choose to use
 * chooses simplicity and high performance over SEO compatibility
-* everything that can be a standard Node.js Stream should be
 * provide APIs to support Models, Presence and more (as Stream Services)
 * only absolute essentials live in the core
 * personal tastes (e.g. CoffeeScript) supported via optional modules
+
+
+## What's working so far?
+
+Right now we have basic client-side asset serving (excluding templates) working. We also have basic PubSub, RPC and Live Reload working over the websocket. These are all implemented as Services (the new name for Request Responders), however the API will need to change to allow each service to be tested. There are many big problems still to solve such as how best to do sessions, auth, and connection status. Expect frequent commits.
+
+If you see a better way to architect or design something, **please** let me know or submit a pull request. Nothing is set in stone at this stage and my primary concern is getting the design right for the long term.
+
+
+## Why SocketStream
+
+Integrating all the bits you need to make a high-performing, scalable realtime web app is hard.
+
+At one end of the scale there's Meteor: a great all-in-one solution, but one that forces you to do everything their way or the highway. At the opposite end is the myriad of individual Node modules which can be plugged together to create the tech stack of your dreams - but this takes a lot of time, knowledge and patience.
+
+Somewhere in the middle of these two extremes lies SocketStream. A modular and highly extensible framework which integrates best-of-breed modules to solve common problems. We take care of all the boring stuff (serving client code as modules, session, asset packing, etc) so you can dive straight in and start creating your app. 
+
+However, the main reason you're going to love SocketStream is our Service API. In addition to the RPC and PubSub modules we provide as standard, you can easily drop-in third-party modules to handle Backbone or Angular model syncing, binary file transfers over the WebSocket (coming soon), and much more.
+
+SocketStream wires everything up for you and sends the necessary assets to the client, so you're up and running right away. But don't be alarmed. There's no back box magic here. Every SocketStream Service is just a standard Node module hosted on npm.
 
 
 ## Warning
@@ -34,28 +56,6 @@ If you see a better way to architect or design something, **please** let me know
 Note: I've deliberately put this code in a new repo so we can discuss crazy new ideas in Github Issues without scaring or confusing existing 0.3 users. I'll move the code over to the `master` branch of the main repo when I feel the API is relatively stable and the overall design is sound.
 
 
-## Major TODOs
-
-* finish work on serving client assets (mostly templates)
-* work out how to pass meta data to streams (e.g. stylus-stream needs to know a file's dir)
-* find a better way to send mux-demux using browserify
-* sessions
-* RPC middleware
-* handle connection status
-* client-side templates
-* finish pub/sub and channel subscriptions
-* finish asset packing
-* cache assets in production
-* write tests for modules which are unlikely to change
-* make some important decisions on future Connect / middleware compatibility
-* finalize new Stream Service interface to allow testing
-* change `ss-engineio` to support Engine.IO's forthcoming Streams interface (when ready)
-* investigate PhoneGap compatibility
-* add lots of error handling etc like we had in 0.3
-
-Help with any of the items above would be gratefully received
-
-
 ## Try it out
 
 Early adopters and hackers only for now!
@@ -64,17 +64,21 @@ Early adopters and hackers only for now!
 git clone https://github.com/socketstream/socketstream-0.4
 cd socketstream-0.4
 [sudo] npm install
+cd mods
+./npm_link_all.sh
+cd ..
 ```
 
 Then run the example app (there's no app generator yet)
 
 ```bash
 cd example_app
+./npm_link_all.sh
 [sudo] npm install
 node app.js
 ```
 
-Note: Stylus and Jade won't be required to use SocketStream 0.4. I'm just keeping the code in /example_app for now.
+Note: Stylus and Jade won't be required to use SocketStream 0.4, nor will any of the other optional modules. They're just included in this repo to aid development for now.
 
 
 ## API
