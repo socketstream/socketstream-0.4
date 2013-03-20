@@ -18,11 +18,39 @@ module.exports = function(){
   // Setup Websocket Transport
   app.transport(require('ss-engineio2')({port: 3001}));
 
-  // Define Services to run over the websocket
-  app.service('livereload', require('ss-livereload')({dirs: '/client'}));
-  app.service('pubsub', require('ss-pubsub')());
-  app.service('rpc', require('ss-rpc')({root: './server/rpc'}));
-  app.service('tweetStream', require('ss-stream')());
+  // Define Realtime Services to run over the websocket
+  app.service('livereload', require('rts-livereload')());
+  app.service('pubsub', require('rts-pubsub')());
+  app.service('rpc', require('rts-rpc')());
+  app.service('tweetStream', require('rts-stream')());
+
+  // Realtime Services are *just* objects, so you can easily define your own
+  app.service('square', {
+
+    use: {callbacks: true},
+
+    client: function(client){
+
+      // invoke this function with ss.square() on the client
+      return function(question) {
+        client.send(question, function(answer){
+          alert(answer);
+        });
+      };
+
+    }, 
+
+    server: function(server) {
+
+      server.onmessage = function(msg, meta, reply) {
+        server.log("We are going to square a number: ", msg);
+        reply('The answer is ' + (msg * msg));
+      };
+
+      server.log("I'm starting up!");
+    }
+
+  });
 
   return app;
 

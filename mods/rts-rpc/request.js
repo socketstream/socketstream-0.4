@@ -6,10 +6,9 @@ var fs = require('fs'),
 
 
 // Handle incoming requests from any source
-module.exports = function (service, options) {
+module.exports = function (server, options) {
 
-  var dir = path.join(service.app.root, options.root),
-      api = apiTree.createApiTree(dir);
+  var api = apiTree.createApiTree(server.service.assigned.root);
 
   return function(req, res) {
 
@@ -48,7 +47,7 @@ module.exports = function (service, options) {
       return res(null, args);
     }
 
-    var actions = file.actions(req, cb, service.services.api);
+    var actions = file.actions(req, cb, server.service.assigned.api);
 
     function main (request, response, next) {
       var method = actions[methodName];

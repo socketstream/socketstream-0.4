@@ -1,6 +1,6 @@
 {
-  "name": "ss-livereload",
-  "description": "Live Reload Service for SocketStream 0.4",
+  "name": "rts-livereload",
+  "description": "Live Reload Realtime Service",
   "version": "0.0.1",
   "author": "Owen Barnes <owen@socketstream.org>",
   "engines": { "node": ">= 0.10.0" },

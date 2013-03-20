@@ -2,6 +2,18 @@ WARNING: At this point *everything* is in flux and may change - drastically.
 Generally the `/example_app` should always be working.
 
 
+0.4.0experimental3 / 2013-03-20
+===============================
+
+#### New Realtime Service API
+
+* Everything to do with Services has been extracted out into the realtime-service and realtime-service-client modules. These modules are used by SocketStream 0.4 but no longer depend on it. The /mods/realtime-service/README.md file explains all.
+* Realtime Services will be promoted as a new open standard for reusable, testable modules that contain client AND server code designed to work well together over a WebSocket. It is hoped other frameworks will implement this standard in the future.
+* `rpc`, `pubsub` and `livereload` are now implemented as RTS modules.
+* Lots of other improvements around Services. Plenty more to come. I'll be talking about Realtime Services extensively at RealtimeConf EU in April.
+
+
+
 0.4.0experimental2 / 2013-03-13
 ===============================
 

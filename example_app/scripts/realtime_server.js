@@ -12,5 +12,5 @@ var ss = app.start(function(){
 });
 
 // Example of a Fake Tweet Stream piping data to all clients every five seconds
-var tweetStream = require('./fake_tweet_stream')(5);
-tweetStream.pipe(ss.tweetStream);
+// var tweetStream = require('./fake_tweet_stream')(5);
+// tweetStream.pipe(ss.tweetStream);

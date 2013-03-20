@@ -1,4 +1,4 @@
-function (client) {
+module.exports = function(client) {
 
   client.onmessage = function(msg) {
 
@@ -20,4 +20,4 @@ function (client) {
     }
   };
 
-}
+};

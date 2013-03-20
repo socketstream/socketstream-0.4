@@ -1,4 +1,4 @@
-function(client) {
+module.exports = function(client) {
 
   var Stream = require('stream');
 
@@ -9,7 +9,7 @@ function(client) {
   s.writable = true;
 
   client.onmessage = function(msg) {
-    //console.log('message in from stream service!', msg);
+    console.log('message in from stream service!', msg);
     s.emit('data', msg);
   };
 
@@ -19,4 +19,4 @@ function(client) {
 
   return s;
 
-}
+};

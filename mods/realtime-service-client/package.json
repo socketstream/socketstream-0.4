@@ -1,0 +1,9 @@
+{
+  "name": "realtime-service-client",
+  "description": "The client-component of Realtime Service",
+  "version": "0.0.1",
+  "author": "Owen Barnes <owen@socketstream.org>",
+  "engines": { "node": ">= 0.10.0" },
+  "dependencies": {
+  }
+}

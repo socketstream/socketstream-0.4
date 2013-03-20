@@ -48,17 +48,19 @@ module.exports = function(options) {
       });
 
       socket.on('message', function(msg) {
-        console.log('Message in from server:', msg);
         var msgAry = parser.parse(msg);
-        client.services.services[msgAry[0]].read(msgAry[1]);
+        client.services.processIncomingMessage(msgAry[0], msgAry[1]);
       });
 
-      // Return Send Method
-      return function(serviceId, content) {
-        var msg = parser.serialize([serviceId, content]);
-        socket.send(msg);
-      };
+      // Return API
+      return {
 
+        write: function(serviceId, content) {
+          var msg = parser.serialize([serviceId, content]);
+          socket.send(msg);
+        }
+
+      };
     },
 
     transport.connect = function() {
@@ -71,6 +73,7 @@ module.exports = function(options) {
 
       io.on('connection', function(socket) {
 
+        // Grab it here as socket.requests gets removed when transport is upgraded
         var remoteAddress = socket.request.connection.remoteAddress;
 
         //transport.event.emit('ss:websocket:client:connect', socket.sessionId, socket.id);
@@ -87,7 +90,7 @@ module.exports = function(options) {
           };
 
           var msgAry = parser.parse(msg);
-          transport.services[msgAry[0]].read(msgAry[1], meta);
+          transport.processIncomingMessage(msgAry[0], msgAry[1], meta);
 
         });
 

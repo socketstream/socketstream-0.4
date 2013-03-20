@@ -1,4 +1,4 @@
-function(client) {
+module.exports = function(client) {
 
   var EE = require('events').EventEmitter;
   var ee = new EE();
@@ -9,4 +9,4 @@ function(client) {
 
   return ee;
 
-}
+};

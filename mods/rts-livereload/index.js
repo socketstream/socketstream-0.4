@@ -21,9 +21,14 @@ module.exports = function(options) {
 
   var actions = {};
 
-  return function(service) {
+  var service = {};
 
-    service.sendClientCode(__dirname + '/client.js');
+  service.client = require('./client.js');
+
+  // Called when the Realtime Server starts up
+  service.server = function(server) {
+
+    server.log('i'.yellow, 'Monitoring changes in', options.dirs.join(', '));
 
     function Action (name, message) {
       actions[name] = this;
@@ -31,8 +36,8 @@ module.exports = function(options) {
       this.execute = function(){
         // Reload browser max once per second
         if ((Date.now() - this.lastRun) > 1000) {
-          service.log('✎'.green, message.grey);
-          service.broadcast(name);
+          server.log('✎'.green, message);
+          server.broadcast(name);
           this.lastRun = Date.now();
         }
       };
@@ -48,7 +53,7 @@ module.exports = function(options) {
     var dirs = options.dirs;
     if (typeof dirs == 'string') dirs = [dirs];
     var directoriesToWatch = dirs.map(function(dir){
-      return path.join(service.app.root, dir);
+      return path.join(server.service.assigned.root, '..', dir);
     });
 
     // Everytime a file changes in anyway, run this
@@ -59,19 +64,17 @@ module.exports = function(options) {
       actions[actionName].execute();
     }
 
-    // Called when the Realtime Server starts up
-    service.start = function() {
+    // Begin watching
+    var watcher = chokidar.watch(directoriesToWatch, {ignored: /(\/\.|~$)/});
 
-      // Begin watching
-      var watcher = chokidar.watch(directoriesToWatch, {ignored: /(\/\.|~$)/});
+    watcher.on('add',     function(filePath)  { onChange(filePath, 'added'); });
+    watcher.on('change',  function(filePath)  { onChange(filePath, 'changed'); });
+    watcher.on('unlink',  function(filePath)  { onChange(filePath, 'removed'); });
+    watcher.on('error',   function(error)     { service.error(error); });
 
-      watcher.on('add',     function(filePath)  { onChange(filePath, 'added'); });
-      watcher.on('change',  function(filePath)  { onChange(filePath, 'changed'); });
-      watcher.on('unlink',  function(filePath)  { onChange(filePath, 'removed'); });
-      watcher.on('error',   function(error)     { service.error(error); });
-
-    };
+    return null;
 
   };
 
+  return service;
 };

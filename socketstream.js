@@ -4,7 +4,6 @@
 
    SocketStream 0.4 (Experimental!)
    --------------------------------
-   Keep track of Single Page Clients and allow actions to be performed on them all
 
 */
 
@@ -12,7 +11,7 @@ var fs = require('fs'),
     path = require('path'),
     EventEmitter = require('events').EventEmitter,
     ClientCode = require('./lib/client/code'),
-    ServiceManager = require('./lib/services');
+    Services = require('./mods/realtime-service');
 
 
 function Application(options){
@@ -53,13 +52,20 @@ function Application(options){
   self.eb = new EventEmitter();
 
   // Load the Service Manager - the heart of SocketStream
-  self._services = new ServiceManager({root: self.root});
+  var serviceRoot = path.join(self.root, 'services');
+  var serviceLogger = function() {
+    var args = Array.prototype.slice.call(arguments);
+    while (args[0].length < 12) args[0] = ' ' + args[0]; // pad
+    args[0] = args[0].grey;
+    console.log.apply(console, args);
+  };
+  self._services = new Services({root: serviceRoot, log: serviceLogger});
 
 }
 
 // Setup Websocket Transport
 Application.prototype.transport = function(mod, options){
-  var transport = {app: this, services: this._services.services};
+  var transport = {app: this, services: this._services.services, processIncomingMessage: this._services.processIncomingMessage};
   mod(transport);
   this._transport = transport;
 
@@ -67,12 +73,25 @@ Application.prototype.transport = function(mod, options){
 };
 
 
-/*
-  Use a Service
-*/
+/**
+ *
+ * Use a Realtime Service
+ *
+ * Examples:
+ *
+ *    ss.service('rpc', require('rts-rpc')());
+ *
+ * @param {String} name of service (must be unique and < 12 chars)
+ * @param {Object} service definition object (see Realtime Service Spec)
+ * @param {Object} options and overrides (e.g. don't send client libs)
+ * @return {Object} TBD
+ * @api public
+ *  
+ */
 
-Application.prototype.service = function(name, mod, options){
-  return this._services.create(name, mod, options);
+Application.prototype.service = function(name, definition, options){
+  if (name.length > 12) throw new Error("Service name '" + name + "' must be 12 chars or less");
+  return this._services.register(name, definition, options);
 };
 
 // Define new Single Page Client
@@ -162,7 +181,7 @@ Application.prototype.serveStatic = function(request, dir){
 // Start listening for Websocket Messages
 Application.prototype.start = function(cb) {
   if (!this._transport) { throw new Error('The app.start() command can only be called once the Websocket Transport has been defined. Set with app.transport()'); }
-  this._services.start(this._transport.connect());
+  this._services.connect(this._transport.connect());
   cb();
   return this._services.api;
 };

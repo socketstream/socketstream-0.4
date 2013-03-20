@@ -1,17 +1,8 @@
-function(client) {
+module.exports = function(client) {
 
   function defaultCallback(x) {
     return console.log(x);
   }
-
-  // Handle incoming responses
-  client.onmessage = function(obj, cb) {
-    if (obj.e) {
-      console.error('SocketStream RPC server error:', obj.e.message);
-    } else {
-      cb.apply(cb, obj.p);
-    }
-  };
 
   // Return API to call functions on the server
   return function() {
@@ -29,10 +20,16 @@ function(client) {
       cb = defaultCallback;
     }
 
-    client.write(msg, cb);
+    client.send(msg, function(obj){
+      if (obj.e) {
+        console.error('RPC server error:', obj.e.message);
+      } else {
+        cb.apply(cb, obj.p);
+      }
+    });
 
     // Always return 'undefined'      
     return void 0;
   };
 
-}
+};

@@ -20,32 +20,32 @@ var Stream = require('stream');
 
 module.exports = function(options) {
 
-  return function(service) {
+  var service = {};
 
-    service.sendClientCode(__dirname + '/client.js');
+  service.client = require('./client.js');
 
-    service.start = function() {
+  service.server = function(server) {
 
-      var s = new Stream.Duplex();
+    var s = new Stream.Duplex();
 
-      s._read = function() {
-        // resume pushing
-      };
-
-      s._write = function(chunk, encoding, cb) {
-        service.log('↪'.cyan, 'streaming data to client');
-        service.broadcast(chunk);
-        cb();
-      };
-
-      service.onmessage = function(msg) {
-        service.log('↩'.green, 'streaming data from client');
-        s.push(msg);
-      };
-
-      return s;
-
+    s._read = function() {
+      // resume pushing
     };
 
+    s._write = function(chunk, encoding, cb) {
+      server.log('↪'.cyan, 'streaming data to client');
+      server.broadcast(chunk);
+      cb();
+    };
+
+    service.onmessage = function(msg) {
+      server.log('↩'.green, 'streaming data from client');
+      s.push(msg);
+    };
+
+    return s;
+
   };
+
+  return service;
 };

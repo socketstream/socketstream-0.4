@@ -1,6 +1,6 @@
 {
-  "name": "ss-stream",
-  "description": "Node Stream Service for SocketStream 0.4",
+  "name": "rts-stream",
+  "description": "Node Stream API Wrapper - Realtime Service",
   "version": "0.0.1",
   "author": "Me <me@mydomain.com>",
   "private": true,
