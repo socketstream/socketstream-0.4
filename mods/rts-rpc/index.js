@@ -17,6 +17,8 @@ module.exports = function(options) {
   service.client = require('./client.js');
 
   service.server = function(server) {
+
+    server.log('i'.yellow, 'Looking for RPC data files in', server.service.assigned.root);
     
     var Request = require('./request')(server, options);
     
@@ -43,7 +45,6 @@ module.exports = function(options) {
       try {
         return new Request(request, response);
       } catch (e) {
-        console.log(e)
         var message = (request.clientIp === '127.0.0.1') && e.stack || 'See server-side logs';
         var obj = { e: { message: message } };
         server.log('↩'.red, request.method, e.message.red);

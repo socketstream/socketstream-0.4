@@ -18,8 +18,9 @@ module.exports = function(options) {
 
   service.server = function(server) {
 
-    return {
-      all: function(){
+    var publishApi = {
+
+      broadcast: function(){
         var eventName = arguments[0],
             params = 2 <= arguments.length ? Array.prototype.slice.call(arguments, 1) : [],
             msg = {e: eventName, p: params};
@@ -28,6 +29,10 @@ module.exports = function(options) {
       }
 
     };
+
+    publishApi.all = publishApi.broadcast;
+
+    return publishApi;
 
   };
 

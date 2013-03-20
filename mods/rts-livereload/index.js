@@ -16,7 +16,7 @@ var path = require('path'),
 module.exports = function(options) {
 
   options = options || {};
-  options.dirs = options.dirs || ['/client'];
+  options.dirs = options.dirs || ['./client'];
   options.cssExtensions = options.cssExtensions || ['css', 'styl', 'less', 'sass'];
 
   var actions = {};
@@ -28,7 +28,7 @@ module.exports = function(options) {
   // Called when the Realtime Server starts up
   service.server = function(server) {
 
-    server.log('i'.yellow, 'Monitoring changes in', options.dirs.join(', '));
+    server.log('i'.yellow, 'Monitoring changes to files in', options.dirs.join(', '));
 
     function Action (name, message) {
       actions[name] = this;
@@ -53,7 +53,7 @@ module.exports = function(options) {
     var dirs = options.dirs;
     if (typeof dirs == 'string') dirs = [dirs];
     var directoriesToWatch = dirs.map(function(dir){
-      return path.join(server.service.assigned.root, '..', dir);
+      return path.join(server.service.assigned.root, '../..', dir);
     });
 
     // Everytime a file changes in anyway, run this
