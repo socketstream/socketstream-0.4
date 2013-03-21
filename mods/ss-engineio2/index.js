@@ -8,65 +8,27 @@ var parser = require('../ss-message-parser')(); // used to multiplex messages fr
 
 module.exports = function(options) {
 
-  if (options === null) options = {};
+  options = options || {};
   
   options.port = options.port || 3001;
-  options.client = options.client || {};
+  options.client = options.client || {port: options.port};
   options.server = options.server || {};
 
   // Return function to connect once HTTP server is started
   return function(transport) {
 
+    transport.options = options;
+
     // Send Engine.IO client code to browser
     transport.app.clients.code.sendLibrary(__dirname + '/client_lib.js');
 
     // We're sending client code in-line at the moment. This is nasty and will change soon
-    transport.client = function(client) {
-
-      var parser = require('ss-message-parser')();
-
-      var socket = new eio('ws://localhost:3001');
-
-      socket.on('open', function(){
-        return client.status.emit('open');
-      });
-
-      socket.on('ready', function() {
-        return client.status.emit('ready');
-      });
-
-      socket.on('disconnect', function() {
-        return client.status.emit('disconnect');
-      });
-
-      socket.on('reconnect', function() {
-        return client.status.emit('reconnect');
-      });
-
-      socket.on('connect', function() {
-        return client.status.emit('connect');
-      });
-
-      socket.on('message', function(msg) {
-        var msgAry = parser.parse(msg);
-        client.services.processIncomingMessage(msgAry[0], msgAry[1]);
-      });
-
-      // Return API
-      return {
-
-        write: function(serviceId, content) {
-          var msg = parser.serialize([serviceId, content]);
-          socket.send(msg);
-        }
-
-      };
-    },
+    transport.client = require('./client');
 
     transport.connect = function() {
 
       // Start Engine.IO server
-      var io = engine.listen(options.port);
+      var io = engine.listen(options.port, options.server);
 
       // // Enable Engine.IO to be configured
       // if (options.server) config.io(io);

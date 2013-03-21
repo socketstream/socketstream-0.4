@@ -14,17 +14,16 @@ function SocketStream(){
   self.status = new EE();
   self.services = new ServiceClient();
 
-  self._connection = null;
   self._transport = null;
 }
 
 // Set Transport
-SocketStream.prototype.transport = function(handler) {
-  this._transport = handler;
+SocketStream.prototype.transport = function(handler, options) {
+  this._transport = handler(options);
 };
 
 SocketStream.prototype.connect = function() {
-  var connection = this._transport(this);
+  var connection = this._transport(this, this._transportConfig);
   this.services.connect(connection);
 };
 
