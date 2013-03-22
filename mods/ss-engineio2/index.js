@@ -22,16 +22,12 @@ module.exports = function(options) {
     // Send Engine.IO client code to browser
     transport.app.clients.code.sendLibrary(__dirname + '/client_lib.js');
 
-    // We're sending client code in-line at the moment. This is nasty and will change soon
     transport.client = require('./client');
 
     transport.connect = function() {
 
       // Start Engine.IO server
       var io = engine.listen(options.port, options.server);
-
-      // // Enable Engine.IO to be configured
-      // if (options.server) config.io(io);
 
       io.on('connection', function(socket) {
 

@@ -1,9 +1,6 @@
 // Process requests from the RPC responder
 
-var fs = require('fs'),
-    path = require('path'),
-    apiTree = require('apitree');
-
+var apiTree = require('apitree');
 
 // Handle incoming requests from any source
 module.exports = function (server, options) {

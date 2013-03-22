@@ -1,5 +1,5 @@
 module.exports = function(options) {
-
+  options = options || {};
   options.protocol = options.protocol || 'ws';
   options.host = options.host || 'localhost';
 
@@ -31,6 +31,7 @@ module.exports = function(options) {
     });
 
     socket.on('message', function(msg) {
+      if (options.debug) console.log('RECV', msg);
       var msgAry = parser.parse(msg);
       client.services.processIncomingMessage(msgAry[0], msgAry[1]);
     });
@@ -40,11 +41,12 @@ module.exports = function(options) {
 
       write: function(serviceId, content) {
         var msg = parser.serialize([serviceId, content]);
+        if (options.debug) console.log('SEND', msg);
         socket.send(msg);
       }
 
     };
 
-  }
+  };
 
 };
