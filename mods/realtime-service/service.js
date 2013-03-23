@@ -27,7 +27,12 @@ Service.prototype.connect = function(transport) {
 };
 
 Service.prototype.paramsForClient = function() {
-  return {id: this.assigned.id, name: this.assigned.name, use: this.use};
+  return {
+    id:       this.assigned.id,
+    name:     this.assigned.name,
+    options:  this.assigned.options,
+    use:      this.use
+  };
 };
 
 Service.prototype.log = function(args) {
@@ -92,10 +97,16 @@ Server.prototype.read = function(msg, meta) {
   });
 };
 
-Server.prototype.sendToSocketId = function(socketId, msg, attrs) {
+Server.prototype.sendToSocketIds = function(socketIds, msg, attrs) {
   msg = this._prepareOutgoingMessage(msg, attrs);
-  this.transport.sendToSocketId(socketId, this.service.assigned.id, msg);
+  if (typeof socketIds !== 'object') socketIds = [socketIds];
+  socketIds.forEach(function(socketId) {
+    this.transport.sendToSocketId(socketId, this.service.assigned.id, msg);
+  }, this);
 };
+
+// Alias
+Server.prototype.sendToSocketId = Server.prototype.sendToSocketIds;
 
 Server.prototype.broadcast = function(msg) {
   msg = this._prepareOutgoingMessage(msg);
@@ -106,6 +117,14 @@ Server.prototype.log = function(){
   var args = Array.prototype.slice.call(arguments);
   this.service.log.call(this.service, args);
 };
+
+Server.prototype.debug = function(){
+  if (!this.service.assigned.options.debug) return;
+  var args = Array.prototype.slice.call(arguments);
+  args.unshift('DEBUG');
+  this.service.log.call(this.service, args);
+};
+
 
 
 /* Private methods */

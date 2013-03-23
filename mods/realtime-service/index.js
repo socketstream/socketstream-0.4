@@ -65,6 +65,7 @@ ServiceManager.prototype.register = function(name, definition, options) {
     api:          this.api,
     root:         options.root || path.join(this.root, name),
     log:          options.log || this.log,
+    options:      options || {},
     rtsVersion:   this.rtsVersion
   };
 

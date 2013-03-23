@@ -12,7 +12,7 @@ function Services() {
 }
 
 Services.prototype.register = function(params, handler) {
-  var service = new Service(params.id, params.name, this, params.use);
+  var service = new Service(this, params);
   this.services[service.id] = service;
   var api = handler(service);
   if (api) this.api[service.name] = api;
@@ -42,11 +42,13 @@ Services.prototype.processIncomingMessage = function(serviceId, msg) {
 
 */
 
-function Service(id, name, services, use) {
-  this.id = id;
-  this.name = name;
+function Service(services, params) {
   this.services = services;
-  this.use = use || {};
+
+  this.id = params.id;
+  this.name = params.name;
+  this.use = params.use || {};
+  this.options = params.options || {};
   this.transport = null;
 
   // for optional callbacks
@@ -82,5 +84,19 @@ Service.prototype.send = function(msg, cb) {
   }
   this.transport.write(this.id, msg);
 };
+
+/**
+ * Browser-friendly debug
+ */
+
+Service.prototype.debug = function() {
+  var args = Array.prototype.slice.call(arguments);
+  args.unshift('DEBUG ' + this.name + ':');
+  if (this.options.debug) {
+    if (window.console && console.log)
+      Function.prototype.apply.call(console.log, console, args);
+  }
+};
+
 
 module.exports = Services;
