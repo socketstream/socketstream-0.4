@@ -54,6 +54,9 @@ function Service(services, params) {
   // for optional callbacks
   this.cbCount = 0;
   this.cbStack = {};
+
+  this.msgAttrs = [];
+  if (this.use.callbacks) this.msgAttrs.push('callbackId');
 }
 
 Service.prototype.connect = function(transport) {
@@ -61,17 +64,28 @@ Service.prototype.connect = function(transport) {
 };
 
 Service.prototype.read = function(msg) {
-  var cbId, cb = null;
-  if (this.use.callbacks) {
-    var i = msg.indexOf('|');
-    cbId = msg.substr(0, i);
-    msg = msg.substr(i + 1);
-    if (cbId) cb = this.cbStack[cbId];
-    if (!cb) throw "No callback found for service " + this.name;
+  var attrs = {}, cb = null;
+
+  // Parse message attributes  
+  if (this.msgAttrs.length > 0) {
+    var msgAry = msg.split('|');
+    for (var i = 0; i < this.msgAttrs.length; i++) {
+      attrs[this.msgAttrs[i]] = msgAry[i];
+    }
+    msg = msgAry.slice(this.msgAttrs.length).join('|');
   }
+
+  // Try to fetch Callback ID
+  var cbId = Number(attrs.callbackId);
+  if (cbId) cb = this.cbStack[cbId];
+
+  // Decode to object
   if (this.use.json) msg = JSON.parse(msg);
-  var fn = cb || this.onmessage;
-  fn(msg);
+
+  // Fire callback or pass to generic onmessage handler
+  (cb || this.onmessage)(msg);
+
+  // Clean up and callback
   if (cbId) delete this.cbStack[cbId];
 };
 

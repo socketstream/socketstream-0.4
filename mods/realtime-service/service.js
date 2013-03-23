@@ -19,6 +19,9 @@ function Service (definition, assigned, services) {
  
   this.serverApi = definition.server;
   this.clientApi = definition.client;
+
+  this.msgAttrs = [];
+  if (this.use.callbacks) this.msgAttrs.push('callbackId');
 }
 
 Service.prototype.connect = function(transport) {
@@ -84,16 +87,25 @@ function Server(service, transport) {
 }
 
 Server.prototype.read = function(msg, meta) {
-  var self = this, attrs = [];
-  if (this.service.use.callbacks) {
-    var i = msg.indexOf('|'), cbId = Number(msg.substr(0, i));
-    msg = msg.substr(i + 1);
-    meta._callbackId = cbId; // pass through to app
-    attrs.push(cbId);
+  var self = this, attrs = {}; 
+
+  // Parse message attributes  
+  if (this.service.msgAttrs.length > 0) {
+    var msgAry = msg.split('|');
+    for (var i = 0; i < this.service.msgAttrs.length; i++) {
+      attrs[this.service.msgAttrs[i]] = msgAry[i];
+    }
+    msg = msgAry.slice(this.service.msgAttrs.length).join('|');
   }
+
+  // Try to fetch Callback ID
+  var cbId = Number(attrs.callbackId);
+  if (cbId) meta._callbackId = cbId;
+
   if (this.service.use.json) msg = JSON.parse(msg);
+
   this.onmessage(msg, meta, function(msg){
-    self.sendToSocketId(meta.socketId, msg, attrs);
+    self.sendToSocketId(meta.socketId, msg, {callbackId: cbId});
   });
 };
 
@@ -131,10 +143,16 @@ Server.prototype.debug = function(){
 
 Server.prototype._prepareOutgoingMessage = function(msg, attrs) {
   if (this.service.use.json) msg = JSON.stringify(msg);
-  if (attrs) {
-    attrs.push(msg);
-    msg = attrs.join('|');
+  
+  // Encode attributes into message if they exist
+  if (this.service.msgAttrs.length > 0) {
+    var buf = this.service.msgAttrs.map(function(attrName){
+      return attrs && attrs[attrName] || '';
+    });
+    buf.push(msg);
+    msg = buf.join('|');
   }
+
   return msg;
 };
 
