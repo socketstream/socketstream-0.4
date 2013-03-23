@@ -28,10 +28,11 @@ function ServiceManager(options) {
   this.services = {};
   this.api = {};
 
-  this.root = this.options.root || __dirname;
-  this.dir = this.options.dir || 'services';
-
+  
+  this.root = this.options.root || __dirname;  // your app's root (used for relative paths)
+  this.dir = this.options.dir || 'services';   // dir containing Service files
   this.log = this.options.log || function(){};
+
   this.rtsVersion = loadPackageJSON().version;
 }
 
@@ -103,23 +104,36 @@ ServiceManager.prototype.connect = function(connection) {
 
 /**
  *
- * Process Incoming Messages
+ * Process Incoming Messages from WebSocket Transport
  *
  * Examples:
  *
- *    services.processIncomingMessage(1, '{"method": "callMe"}', {socketId: 1234});
+ *    services.onmessage('1|{"method": "callMe"}', {socketId: 1234});
  *
- * @param {Number} ID of the service this message is intended for
- * @param {String} the message in String form
+ * @param {String} the raw message in String form
  * @param {Object} an object containing details about the sender (socketId, sessionId, etc)
  * @return {null}
  * @api public
  *  
  */
 
-ServiceManager.prototype.processIncomingMessage = function(serviceId, msg, meta) {
+ServiceManager.prototype.onmessage = function(msg, meta) {
+  var attrs = {};
+  var msgAry = msg.split('|');
+
+  // First work out which service this is for
+  var serviceId = msgAry.shift();
   var service = this.services[serviceId];
-  service._server.read(msg, meta);
+
+  // Parse optional message attributes  
+  if (service.msgAttrs.length > 0) {
+    for (var i = 0; i < service.msgAttrs.length; i++) {
+      attrs[service.msgAttrs[i]] = msgAry[i];
+    }
+    msg = msgAry.slice(service.msgAttrs.length).join('|');
+  }
+ 
+  return service._server.read(msg, meta, attrs);
 };
 
 

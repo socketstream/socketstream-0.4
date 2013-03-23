@@ -16,7 +16,7 @@ module.exports = function(){
   app.log.debug = console.log;
 
   // Setup Websocket Transport
-  app.transport(require('ss-engineio2')({port: 3001}));
+  app.transport(require('rtt-engineio')({port: 3001}));
 
   // Define Realtime Services to run over the websocket
   app.service('livereload', require('rts-livereload')());

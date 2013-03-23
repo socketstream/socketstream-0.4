@@ -61,21 +61,41 @@ function Application(options){
 
   // Load the Service Manager - the heart of SocketStream
   self._services = new Services({
-    root:   self.root,
-    dir:    'services',
-    log:    serviceLogger
+    root: self.root,
+    dir:  'services',
+    log:  serviceLogger
   });
 
 }
 
-// Setup Websocket Transport
-Application.prototype.transport = function(mod, options){
-  var transport = {app: this, services: this._services.services, processIncomingMessage: this._services.processIncomingMessage};
-  mod(transport);
-  this._transport = transport;
+/**
+ *
+ * Use a Realtime Transport
+ *
+ * Examples:
+ *
+ *    ss.transport(require('rtt-engineio')());
+ *
+ * @param {Object} transport definition object (see Realtime Transport Spec)
+ * @param {Object} options and overrides (e.g. don't send client libs)
+ * @return {Object} TBD
+ * @api public
+ * 
+ */
 
-  return this._transport;
+Application.prototype.transport = function(spec){
+
+  // placing this here for now - need to find a better way
+  // as both Transports and Services need to send assets
+  if (spec.clientAssets) {
+    spec.clientAssets.forEach(function(asset){
+      this.clients.code.sendLibrary(asset.filename);
+    }, this);
+  }
+
+  this._transport = spec;
 };
+
 
 
 /**
@@ -91,7 +111,7 @@ Application.prototype.transport = function(mod, options){
  * @param {Object} options and overrides (e.g. don't send client libs)
  * @return {Object} TBD
  * @api public
- *  
+ * 
  */
 
 Application.prototype.service = function(name, definition, options){
@@ -186,7 +206,13 @@ Application.prototype.serveStatic = function(request, dir){
 // Start listening for Websocket Messages
 Application.prototype.start = function(cb) {
   if (!this._transport) { throw new Error('The app.start() command can only be called once the Websocket Transport has been defined. Set with app.transport()'); }
-  this._services.connect(this._transport.connect());
+  
+  var connection = this._transport.server({
+    onmessage:  this._services.onmessage.bind(this._services),
+    status:     new EventEmitter()
+  });
+
+  this._services.connect(connection);
   cb();
   return this._services.api;
 };

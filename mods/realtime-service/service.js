@@ -91,17 +91,8 @@ function Server(service, transport) {
   this.transport = transport;
 }
 
-Server.prototype.read = function(msg, meta) {
-  var self = this, attrs = {}; 
-
-  // Parse message attributes  
-  if (this.service.msgAttrs.length > 0) {
-    var msgAry = msg.split('|');
-    for (var i = 0; i < this.service.msgAttrs.length; i++) {
-      attrs[this.service.msgAttrs[i]] = msgAry[i];
-    }
-    msg = msgAry.slice(this.service.msgAttrs.length).join('|');
-  }
+Server.prototype.read = function(msg, meta, attrs) {
+  var self = this; 
 
   // Try to fetch Callback ID
   var cbId = Number(attrs.callbackId);
@@ -118,7 +109,7 @@ Server.prototype.sendToSocketIds = function(socketIds, msg, attrs) {
   msg = this._prepareOutgoingMessage(msg, attrs);
   if (typeof socketIds !== 'object') socketIds = [socketIds];
   socketIds.forEach(function(socketId) {
-    this.transport.sendToSocketId(socketId, this.service.assigned.id, msg);
+    this.transport.sendToSocketId(socketId, msg);
   }, this);
 };
 
@@ -127,7 +118,7 @@ Server.prototype.sendToSocketId = Server.prototype.sendToSocketIds;
 
 Server.prototype.broadcast = function(msg) {
   msg = this._prepareOutgoingMessage(msg);
-  this.transport.broadcast(this.service.assigned.id, msg);
+  this.transport.broadcast(msg);
 };
 
 Server.prototype.log = function(){
@@ -148,17 +139,19 @@ Server.prototype.debug = function(){
 
 Server.prototype._prepareOutgoingMessage = function(msg, attrs) {
   if (this.service.use.json) msg = JSON.stringify(msg);
+
+  var buf = [this.service.assigned.id];
   
   // Encode attributes into message if they exist
   if (this.service.msgAttrs.length > 0) {
-    var buf = this.service.msgAttrs.map(function(attrName){
-      return attrs && attrs[attrName] || '';
+    this.service.msgAttrs.map(function(attrName){
+      buf.push(attrs && attrs[attrName] || '');
     });
-    buf.push(msg);
-    msg = buf.join('|');
   }
 
-  return msg;
+  buf.push(msg);
+
+  return buf.join('|');
 };
 
 
