@@ -53,7 +53,7 @@ module.exports = function(options) {
     var dirs = options.dirs;
     if (typeof dirs == 'string') dirs = [dirs];
     var directoriesToWatch = dirs.map(function(dir){
-      return path.join(server.service.assigned.root, '../..', dir);
+      return path.join(server.service.services.root, dir);
     });
 
     // Everytime a file changes in anyway, run this

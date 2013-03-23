@@ -18,7 +18,7 @@ module.exports = function(options) {
 
   service.server = function(server) {
 
-    server.log('i'.yellow, 'Looking for RPC data files in', server.service.assigned.root);
+    server.log('i'.yellow, 'Looking for RPC data files in', server.service.relativeRoot());
     
     var Request = require('./request')(server, options);
     

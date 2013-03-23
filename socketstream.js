@@ -51,15 +51,20 @@ function Application(options){
   // System Event Bus - allows apps to respond to system events
   self.eb = new EventEmitter();
 
-  // Load the Service Manager - the heart of SocketStream
-  var serviceRoot = path.join(self.root, 'services');
+  
   var serviceLogger = function() {
     var args = Array.prototype.slice.call(arguments);
     while (args[0].length < 12) args[0] = ' ' + args[0]; // pad
     args[0] = args[0].grey;
     console.log.apply(console, args);
   };
-  self._services = new Services({root: serviceRoot, log: serviceLogger});
+
+  // Load the Service Manager - the heart of SocketStream
+  self._services = new Services({
+    root:   self.root,
+    dir:    'services',
+    log:    serviceLogger
+  });
 
 }
 

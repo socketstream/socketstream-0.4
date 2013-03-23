@@ -29,6 +29,8 @@ function ServiceManager(options) {
   this.api = {};
 
   this.root = this.options.root || __dirname;
+  this.dir = this.options.dir || 'services';
+
   this.log = this.options.log || function(){};
   this.rtsVersion = loadPackageJSON().version;
 }
@@ -63,7 +65,7 @@ ServiceManager.prototype.register = function(name, definition, options) {
     id:           this.count++,
     name:         name,
     api:          this.api,
-    root:         options.root || path.join(this.root, name),
+    root:         options.root || path.join(this.root, this.dir, name),
     log:          options.log || this.log,
     options:      options || {},
     rtsVersion:   this.rtsVersion

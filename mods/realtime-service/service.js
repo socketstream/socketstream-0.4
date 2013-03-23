@@ -38,6 +38,11 @@ Service.prototype.paramsForClient = function() {
   };
 };
 
+Service.prototype.relativeRoot = function() {
+  var l = this.services.root.length;
+  return '.' + this.assigned.root.substr(l);
+};
+
 Service.prototype.log = function(args) {
   if (this.assigned.log) {
     args.unshift(this.assigned.name); // append service name
