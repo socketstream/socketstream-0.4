@@ -61,9 +61,10 @@ function Application(options){
 
   // Load the Service Manager - the heart of SocketStream
   self._services = new Services({
-    root: self.root,
-    dir:  'services',
-    log:  serviceLogger
+    root:   self.root,
+    dir:    'services',
+    log:    serviceLogger,
+    events: self.eb
   });
 
 }
@@ -209,7 +210,7 @@ Application.prototype.start = function(cb) {
   
   var connection = this._transport.server({
     onmessage:  this._services.onmessage.bind(this._services),
-    status:     new EventEmitter()
+    status:     this.eb
   });
 
   this._services.connect(connection);

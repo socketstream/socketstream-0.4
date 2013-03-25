@@ -89,6 +89,8 @@ Service.prototype.testClient = function() {
 function Server(service, transport) {
   this.service = service;
   this.transport = transport;
+
+  this.events = service.assigned.events;
 }
 
 Server.prototype.read = function(msg, meta, attrs) {

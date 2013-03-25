@@ -14,11 +14,27 @@
 
 var fs = require('fs');
 var path = require('path');
+var EventEmitter = require('events').EventEmitter;
 var Service = require('./service');
 
 
 /**
- * SERVICE MANAGER
+ *
+ * Service Manager
+ *
+ * Examples:
+ *
+ * var services = new ServiceManager({
+ *   root:    '/my/app/dir',
+ *   dir:     'services',
+ *   log:     console.log,
+ *   events:  instanceOfAnEventEmitter
+ * });
+ * 
+ * @param {Object} options
+ * @return {Object} instance of ServiceManager
+ * @api public
+ *  
  */
 
 function ServiceManager(options) {
@@ -28,10 +44,10 @@ function ServiceManager(options) {
   this.services = {};
   this.api = {};
 
-  
   this.root = this.options.root || __dirname;  // your app's root (used for relative paths)
   this.dir = this.options.dir || 'services';   // dir containing Service files
   this.log = this.options.log || function(){};
+  this.events = this.options.events || new EventEmitter();
 
   this.rtsVersion = loadPackageJSON().version;
 }
@@ -66,6 +82,7 @@ ServiceManager.prototype.register = function(name, definition, options) {
     id:           this.count++,
     name:         name,
     api:          this.api,
+    events:       this.events,
     root:         options.root || path.join(this.root, this.dir, name),
     log:          options.log || this.log,
     options:      options || {},
