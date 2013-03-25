@@ -12,5 +12,6 @@ var ss = app.start(function(){
 });
 
 // Example of a Fake Tweet Stream piping data to all clients every five seconds
+// Be sure to uncomment app.service('tweetStream', require('rts-stream')()); in /config.js to try this
 // var tweetStream = require('./fake_tweet_stream')(5);
 // tweetStream.pipe(ss.tweetStream);

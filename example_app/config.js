@@ -22,7 +22,9 @@ module.exports = function(){
   app.service('livereload', require('rts-livereload')());
   app.service('pubsub', require('rts-pubsub')());
   app.service('rpc', require('rts-rpc')());
-  app.service('tweetStream', require('rts-stream')());
+  
+  // Example Stream Service (requires Node 0.10 so disabled by default)
+  //app.service('tweetStream', require('rts-stream')());
 
   // Realtime Services are *just* objects, so you can easily define your own
   app.service('square', {
