@@ -31,8 +31,8 @@ I'm releasing previews of 0.4 as it takes shape over the coming months. While th
 
 The SocketStream framework is a 'meta module' which integrates the following standalone modules for maximum productivity:
 
-**[socketstream-server](https://github.com/socketstream/socketstream-0.4/blob/master/mods/socketstream-server/README.md)** SocketStream Realtime Server. Responds to requests over websockets
-**[socketstream-client](https://github.com/socketstream/socketstream-0.4/blob/master/mods/socketstream-client/README.md)** SocketStream Realtime Client. Connect to the server from the browser or other Node process
+**[socketstream-server](https://github.com/socketstream/socketstream-0.4/blob/master/mods/socketstream-server/README.md)** Responds to requests over websockets  
+**[socketstream-client](https://github.com/socketstream/socketstream-0.4/blob/master/mods/socketstream-client/README.md)** Connects to the server from the browser or other Node process  
 
 TODO: Separate out Single Page Client and Asset Building.
 
