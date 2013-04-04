@@ -12,7 +12,7 @@ require('colors');
 
 module.exports = function(options) {
 
-  var service = {use: {json: true}};
+  var service = {use: {json: true, sessions: true}};
 
   service.client = require('./client.js');
 

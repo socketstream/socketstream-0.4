@@ -1,3 +1,3 @@
 # Realtime Service Spec
 
-TODO
+TODO: Detail how to create a Realtime Service from scratch

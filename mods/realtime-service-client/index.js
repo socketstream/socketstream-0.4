@@ -1,46 +1,10 @@
 "use strict";
 
-/*
-
-  Realtime Service Client
-
-*/
-
-function Services() {
-  this.services = {};
-  this.api = {};
-}
-
-Services.prototype.register = function(params, handler) {
-  var service = new Service(this, params);
-  this.services[service.id] = service;
-  var api = handler(service);
-  if (api) this.api[service.name] = api;
-  return api;
-};
-
-Services.prototype.connect = function(connection) {
-  for (var id in this.services) {
-    var service = this.services[id];
-    service.connect(connection);
-  }
-};
-
-
-Services.prototype.processIncomingMessage = function(serviceId, msg) {
-  var service = this.services[serviceId];
-  if (service) {
-    service.read(msg);
-  } else {
-    throw('Unable to process incoming message. Service ID ' + serviceId + ' not found');
-  }
-};
-
-/*
-
-  An Individual Service
-
-*/
+/*!
+ * Realtime Service - Client
+ * Copyright(c) 2013 Owen Barnes <owen@socketstream.org>
+ * MIT Licensed
+ */
 
 function Service(services, params) {
   this.services = services;
@@ -49,7 +13,7 @@ function Service(services, params) {
   this.name = params.name;
   this.use = params.use || {};
   this.options = params.options || {};
-  this.transport = null;
+  this.private = params.private || false;
 
   // for optional callbacks
   this.cbCount = 0;
@@ -59,21 +23,18 @@ function Service(services, params) {
   if (this.use.callbacks) this.msgAttrs.push('callbackId');
 }
 
-Service.prototype.connect = function(transport) {
-  this.transport = transport;
-};
-
-Service.prototype.read = function(msg) {
+Service.prototype.read = function(msgAry) {
   var attrs = {}, cb = null;
 
   // Parse message attributes  
   if (this.msgAttrs.length > 0) {
-    var msgAry = msg.split('|');
     for (var i = 0; i < this.msgAttrs.length; i++) {
-      attrs[this.msgAttrs[i]] = msgAry[i];
+      attrs[this.msgAttrs[i]] = msgAry.shift();
     }
-    msg = msgAry.slice(this.msgAttrs.length).join('|');
   }
+
+  // Get message content
+  var msg = msgAry.join('|');
 
   // Try to fetch Callback ID
   var cbId = Number(attrs.callbackId);
@@ -90,17 +51,27 @@ Service.prototype.read = function(msg) {
 };
 
 Service.prototype.send = function(msg, cb) {
+  var msgAry = [this.id];
+
+  // Encode to JSON
   if (this.use.json) msg = JSON.stringify(msg);
+
+  // Optionally add callback to stack
   if (this.use.callbacks) {
     var cbId = ++this.cbCount;
     this.cbStack[cbId] = cb;
-    msg = cbId + '|' + msg;
+    msgAry.push(cbId);
   }
-  this.transport.write(this.id, msg);
+
+  // Assemble final message
+  msgAry.push(msg);
+  msg = msgAry.join('|');
+
+  this.services.connection.write(msg);
 };
 
 /**
- * Browser-friendly debug
+ * Browser-friendly debug (won't break in old IE)
  */
 
 Service.prototype.debug = function() {
@@ -112,5 +83,4 @@ Service.prototype.debug = function() {
   }
 };
 
-
-module.exports = Services;
+module.exports = Service;

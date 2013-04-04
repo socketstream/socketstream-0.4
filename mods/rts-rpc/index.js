@@ -12,7 +12,7 @@ require('colors');
 
 module.exports = function(options) {
 
-  var service = {use: {json: true, callbacks: true}};
+  var service = {use: {json: true, callbacks: true, sessions: true}};
 
   service.client = require('./client.js');
 
@@ -29,6 +29,7 @@ module.exports = function(options) {
       request.method = msg.m;
       request.params = msg.p;
       request.receivedAt = Date.now();
+      request.session = meta.session;
 
       var response = function(err, response) {
         var obj = { p: response };

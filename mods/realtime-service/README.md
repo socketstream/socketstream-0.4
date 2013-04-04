@@ -1,31 +1,30 @@
-# Realtime Service API
+# Realtime Service
 
-*** Warning: This spec will evolve over the coming months ***
+An open standard describing a mix of client and server-side code designed to communicate over a persistent connection. This is usually a WebSocket connection, but any Realtime Transport module is compatible.
 
-An open standard for creating simple 'services' which are:
+Each service is defined in the simplest possible way: as a standard JavaScript object. They can be loaded into servers which implement Realtime Services, such as socketstream-server.
 
-* high performing
-* reusable
-* testable
-* sharable (on `npm`)
+Realtime Services are designed to be very easy to understand, write, test and share on `npm`.
 
-Realtime Services (RTS) define client and server code designed to work together.
+Here's a simple example:
 
-They run over a WebSocket to provide:
+```js
+var service = {
+  client: function(client) {
+    client.onmessage = function(msg) {
+      console.log('Message in from server:', msg);
+    }
+  },
 
-* realtime model syncing
-* rpc and pubsub
-* user presence
-* gaming
-* news feeds
-* and much more!
+  server: function(server) {
+    setInterval(function(){
+      server.broadcast('Hello!');  
+    }, 1000);
+  }
+}
+```
 
-Realtime Services are currently implemented in SocketStream 0.4. 
-
-As other frameworks / toolkits implement them, they will be listed here.
-
-
-### Examples
+### Examples Services
 
 rts-rpc
 rts-pubsub
@@ -34,30 +33,31 @@ rts-livereload
 
 ### Features
 
-* super-simple: services are defined as JavaScript objects
-* designed for speed and raw throughput
+* super-simple: services are just JavaScript objects
 * provides separate APIs for the client and server
-* each API is added to a shared `api` object (easily passed around)
-* handles JSON encoding/decoding and callbacks for you
 * easy to write tests
-* send JavaScript code to the client (as libs or modules)
-* provide a standard logging API
-* ultra-light client-side code (for sending to browser)
+* realtime-service-client can run in a browser or separate node process
+* each service has it's own directory to store files (e.g. model definitions)
+* efficiently handles callbacks, even for non-JSON messages
+* services can optionally use sessions (provided by the server)
+* server is notified when client connect/disconnect (allowing cleanup)
+* services can send JavaScript assets to the browser
+* optionally handles JSON encoding/decoding for you
+* provides a standard logging API
+* ultra light weight client-side code (for sending to browser)
 
-And coming soon....
-
-* send and receive strings or binary data
-* use services over a TCP connection from another Node process
-
-Everything is optional! Use only what you need.
 
 Service do not care about:
 
-* the underlying transport layer
-* how data is multiplexed over the websocket
-* how code is delivered to the browser
+* the underlying transport layer (abstracted away by Realtime Transport)
+* how code is delivered to the browser (left to the framework or app)
 
-These problems are solved higher up by the framework or app.
+
+### Implementations
+
+Realtime Services are currently implemented in SocketStream 0.4. 
+
+As other frameworks / toolkits implement them, they will be listed here.
 
 
 ### Contents
@@ -65,7 +65,7 @@ These problems are solved higher up by the framework or app.
 Realtime Services consist of
 
 1. This - the server-side library
-2. The `realtime-service-client` module (separated for Browserify)
+2. The `realtime-service-client` module
 3. The Realtime Server Spec (TODO)
 
 
@@ -86,6 +86,4 @@ Realtime Services will live at the very heart of SocketStream 0.4. However, I ho
 #### Can I use Realtime Services with something other than SocketStream?
 
 Absolutely! Please let us know if you do.
-
-
 

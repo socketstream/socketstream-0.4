@@ -27,9 +27,19 @@ I'm releasing previews of 0.4 as it takes shape over the coming months. While th
 * personal tastes (e.g. CoffeeScript) supported via optional modules
 
 
+## New Modular Design
+
+The SocketStream framework is a 'meta module' which integrates the following standalone modules for maximum productivity:
+
+**[socketstream-server](https://github.com/socketstream/socketstream-0.4/blob/master/mods/socketstream-server/README.md)** SocketStream Realtime Server. Responds to requests over websockets
+**[socketstream-client](https://github.com/socketstream/socketstream-0.4/blob/master/mods/socketstream-client/README.md)** SocketStream Realtime Client. Connect to the server from the browser or other Node process
+
+TODO: Separate out Single Page Client and Asset Building.
+
+
 ## What's working so far?
 
-Right now we have basic client-side asset serving (excluding templates) working. We also have basic PubSub, RPC and Live Reload working over the websocket. These are all implemented as Services (the new name for Request Responders), however the API will need to change to allow each service to be tested. There are many big problems still to solve such as how best to do sessions, auth, and connection status. Expect frequent commits.
+Right now we have basic client-side asset serving (excluding templates) working. We also have basic PubSub, RPC and Live Reload working over the websocket. These are all implemented as Realtime Services (the new name for Request Responders), however the API will need to change to allow each service to be tested. There are many big problems still to solve such as how best to do sessions, auth, and connection status. Expect frequent commits.
 
 If you see a better way to architect or design something, **please** let me know or submit a pull request. Nothing is set in stone at this stage and my primary concern is getting the design right for the long term.
 
@@ -40,11 +50,9 @@ Integrating all the bits you need to make a high-performing, scalable realtime w
 
 At one end of the scale there's Meteor: a great all-in-one solution, but one that forces you to do everything their way or the highway. At the opposite end is the myriad of individual Node modules which can be plugged together to create the tech stack of your dreams - but this takes a lot of time, knowledge and patience.
 
-Somewhere in the middle of these two extremes lies SocketStream. A modular and highly extensible framework which integrates best-of-breed modules to solve common problems. We take care of all the boring stuff (serving client code as modules, session, asset packing, etc) so you can dive straight in and start creating your app. 
+Somewhere in the middle of these two extremes lies SocketStream. A modular and highly extensible framework which integrates best-of-breed modules to solve common problems. We take care of all the boring stuff (serving client code as modules, session, asset packing, etc) so you can dive straight in and start creating your app.
 
-However, the main reason you're going to love SocketStream is our Service API. In addition to the RPC and PubSub modules we provide as standard, you can easily drop-in third-party modules to handle Backbone or Angular model syncing, binary file transfers over the WebSocket (coming soon), and much more.
-
-SocketStream wires everything up for you and sends the necessary assets to the client, so you're up and running right away. But don't be alarmed. There's no back box magic here. Every SocketStream Service is just a standard Node module hosted on npm.
+Add whatever functionality your app needs (e.g. RPC, PubSub, Realtime Models) by combining Realtime Services together, then take advantage of our slick build system which wires up everything on your behalf. Best of all, everything is implemented as standalone `npm` modules, so you're free to change any part of it in the future without having to start from scratch.
 
 
 ## Warning

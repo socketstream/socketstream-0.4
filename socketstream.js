@@ -1,17 +1,16 @@
 "use strict";
 
-/*
-
-   SocketStream 0.4 (Experimental!)
-   --------------------------------
-
-*/
+/*!
+ * SocketStream 0.4
+ * ----------------
+ * Copyright(c) 2013 Owen Barnes <owen@socketstream.org>
+ * MIT Licensed
+ */
 
 var fs = require('fs'),
     path = require('path'),
     EventEmitter = require('events').EventEmitter,
-    ClientCode = require('./lib/client/code'),
-    Services = require('./mods/realtime-service');
+    Server = require('./mods/socketstream-server');
 
 
 function Application(options){
@@ -42,15 +41,8 @@ function Application(options){
     error:  console.error
   };
 
-  // Code to be sent to all clients
-  self.clients.code = new ClientCode();
-
-  // Load System Defaults
-  require('./lib/load_defaults')(self);
-
   // System Event Bus - allows apps to respond to system events
   self.eb = new EventEmitter();
-
   
   var serviceLogger = function() {
     var args = Array.prototype.slice.call(arguments);
@@ -59,15 +51,16 @@ function Application(options){
     console.log.apply(console, args);
   };
 
-  // Load the Service Manager - the heart of SocketStream
-  self._services = new Services({
+  // Load the Realtime Server
+  self.server = new Server({
     root:   self.root,
     dir:    'services',
-    log:    serviceLogger,
+    log:    serviceLogger,    
     events: self.eb
   });
 
 }
+
 
 /**
  *
@@ -85,18 +78,8 @@ function Application(options){
  */
 
 Application.prototype.transport = function(spec){
-
-  // placing this here for now - need to find a better way
-  // as both Transports and Services need to send assets
-  if (spec.clientAssets) {
-    spec.clientAssets.forEach(function(asset){
-      this.clients.code.sendLibrary(asset.filename);
-    }, this);
-  }
-
-  this._transport = spec;
+   this.server.transport = spec;
 };
-
 
 
 /**
@@ -117,11 +100,54 @@ Application.prototype.transport = function(spec){
 
 Application.prototype.service = function(name, definition, options){
   if (name.length > 12) throw new Error("Service name '" + name + "' must be 12 chars or less");
-  return this._services.register(name, definition, options);
+  return this.server.service(name, definition, options);
 };
+
+
+/**
+ *
+ * Start Realtime Server
+ *
+ * Examples:
+ *
+ *    ss.start(function(){ 
+ *      console.log("Realtime server started!");
+ *    });
+ *
+ * @param {Function} callback to execute once server starts
+ * @api public
+ * 
+ */
+
+Application.prototype.start = function(cb) {
+  return this.server.start(cb);
+};
+
+
+// Provide an adapter so SocketStream can be plugged into Connect or Express
+Application.prototype.connectMiddleware = function(options){
+  var self = this;
+
+  return function(req, res, next) {
+    if (req.url === '/') {
+      next();
+    } else {
+      self.serveAssets(req, 'client/public').pipe(res);
+    }
+
+  };
+};
+
+
+
+
+
+
 
 // Define new Single Page Client
 Application.prototype.client = function(viewName, paths, options){
+
+  var self = this;
 
   options = options || {};
 
@@ -137,7 +163,10 @@ Application.prototype.client = function(viewName, paths, options){
     });
   }
 
-  var thisClient = new Client(this, viewName, paths);
+  var thisClient = new Client(this, viewName, paths, function(){
+    return self.server.browserAssets();
+  });
+
   thisClient.baseDir = options.baseDir;
   this.clients.push(thisClient);
   return thisClient;
@@ -202,34 +231,6 @@ Application.prototype.serveSystem = function(request){
 Application.prototype.serveStatic = function(request, dir){
   var fileName = path.join(this.root, dir, request.url);
   return require('filed')(fileName);
-};
-
-// Start listening for Websocket Messages
-Application.prototype.start = function(cb) {
-  if (!this._transport) { throw new Error('The app.start() command can only be called once the Websocket Transport has been defined. Set with app.transport()'); }
-  
-  var connection = this._transport.server({
-    onmessage:  this._services.onmessage.bind(this._services),
-    status:     this.eb
-  });
-
-  this._services.connect(connection);
-  cb();
-  return this._services.api;
-};
-
-// Provide an adapter so SocketStream can be plugged into Connect or Express
-Application.prototype.connectMiddleware = function(options){
-  var self = this;
-
-  return function(req, res, next) {
-    if (req.url === '/') {
-      next();
-    } else {
-      self.serveAssets(req, 'client/public').pipe(res);
-    }
-
-  };
 };
 
 

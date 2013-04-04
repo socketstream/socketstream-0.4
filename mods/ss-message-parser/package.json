@@ -1,9 +1,0 @@
-{
-  "name": "ss-message-parser",
-  "description": "Used to multiplex messages from multiple services in SocketStream 0.4",
-  "version": "0.0.1",
-  "author": "Owen Barnes <owen@socketstream.org>",
-  "engines": { "node": ">= 0.10.0" },
-  "dependencies": {
-  }
-}

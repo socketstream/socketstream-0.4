@@ -12,15 +12,16 @@ var app = new SocketStream();
 // to see *exactly* what's being sent to the client
 require('./system')(app);
 
-app.connect();
+app.connect(app.transport, function(err, info) {
 
-// Aliases to aid development
-window.app = app;
-window.ss = app.services.api;
+  console.log('Connected to the server!', info);
 
-app.status.on('open', function(){
-  console.log('Connected to the server!');
+  // Aliases to aid development
+  window.app = app;
+  window.ss = app.api;
 
   // Load your first app module
-  require('./chat');
+  require('./app');
+
 });
+

@@ -1,165 +1,90 @@
 "use strict";
 
 /*!
- * Realtime Services
- * Server-side Library
+ * Realtime Service
  * Copyright(c) 2013 Owen Barnes <owen@socketstream.org>
  * MIT Licensed
  */
 
 
 /**
- * Module dependencies.
+ * Load objects to be passed to server() and client()
  */
 
-var fs = require('fs');
-var path = require('path');
-var EventEmitter = require('events').EventEmitter;
-var Service = require('./service');
+var Server = require('./server');
+var Client = require('../realtime-service-client');
 
+function Service (definition, assigned, services) {
+  if (typeof assigned.id === 'undefined') throw new Error("Service must have an ID");
+  if (!assigned.name) throw new Error("Service must have a name");
 
-/**
- *
- * Service Manager
- *
- * Examples:
- *
- * var services = new ServiceManager({
- *   root:    '/my/app/dir',
- *   dir:     'services',
- *   log:     console.log,
- *   events:  instanceOfAnEventEmitter
- * });
- * 
- * @param {Object} options
- * @return {Object} instance of ServiceManager
- * @api public
- *  
- */
+  this.assigned = assigned;
+  this.services = services;
 
-function ServiceManager(options) {
-  this.options = options || {};
+  this.use = definition.use || {};
+ 
+  this.serverApi = definition.server;
+  this.clientApi = definition.client;
 
-  this.count = 0;
-  this.services = {};
-  this.api = {};
+  this.private = definition.private || false;
 
-  this.root = this.options.root || __dirname;  // your app's root (used for relative paths)
-  this.dir = this.options.dir || 'services';   // dir containing Service files
-  this.log = this.options.log || function(){};
-  this.events = this.options.events || new EventEmitter();
-
-  this.rtsVersion = loadPackageJSON().version;
+  this.msgAttrs = [];
+  if (this.use.callbacks) this.msgAttrs.push('callbackId');
 }
 
+Service.prototype.start = function(transport) {
+  this.server = new Server(this, transport);
+  return this.serverApi(this.server);
+};
 
-/**
- *
- * Register a new Service Definition
- *
- * Examples:
- *
- *    services.register('rpc', require('rts-rpc')())
- *
- * @param {String} name of service (must be unique and < 12 chars)
- * @param {Object} service definition object (see Realtime Service Spec)
- * @param {Object} options and overrides (e.g. don't send client libs)
- * @return {Object} instance of Service
- * @api public
- *  
- */
+Service.prototype.paramsForClient = function() {
+  return {
+    id:       this.assigned.id,
+    name:     this.assigned.name,
+    options:  this.assigned.options,
+    use:      this.use
+  };
+};
 
-ServiceManager.prototype.register = function(name, definition, options) {
-  options = options || {};
+Service.prototype.relativeRoot = function() {
+  var l = this.services.root.length;
+  return '.' + this.assigned.root.substr(l);
+};
 
-  // check for name uniqueness
-  for (var serviceId in this.services) {
-     if (this.services[serviceId].assigned.name === name)
-       throw new Error('Service name ' + name + ' already used. Please choose another name.');
+Service.prototype.log = function(args) {
+  if (this.assigned.log) {
+    args.unshift(this.assigned.name); // append service name
+    this.assigned.log.apply(this.assigned.log, args);
   }
+};
 
-  var assign = {
-    id:           this.count++,
-    name:         name,
-    api:          this.api,
-    events:       this.events,
-    root:         options.root || path.join(this.root, this.dir, name),
-    log:          options.log || this.log,
-    options:      options || {},
-    rtsVersion:   this.rtsVersion
+// A mock client used for testing - lot of work and thinking still to do here
+Service.prototype.testClient = function() {
+  var self = this;
+
+  var client = new Client();
+
+  var serverTransport = {
+    sendToSocketId: function(fake, serviceId, msg) {
+      client.processIncomingMessage(self.assigned.id, msg);
+    }
   };
 
-  var service = new Service(definition, assign, this);
-  this.services[assign.id] = service;
-  return service;
-};
-
-
-/**
- *
- * Connect Services to Transport
- *
- * Examples:
- *
- *    services.connect(connection)
- *
- * @param {Object} a transport object
- * @return {null}
- * @api public
- *  
- */
-
-ServiceManager.prototype.connect = function(connection) {
-  for (var id in this.services) {
-    var service = this.services[id];
-    var serverApi = service.connect(connection);
-    if (serverApi) this.api[service.assigned.name] = serverApi;
-  }
-  return null;
-};
-
-
-/**
- *
- * Process Incoming Messages from WebSocket Transport
- *
- * Examples:
- *
- *    services.onmessage('1|{"method": "callMe"}', {socketId: 1234});
- *
- * @param {String} the raw message in String form
- * @param {Object} an object containing details about the sender (socketId, sessionId, etc)
- * @return {null}
- * @api public
- *  
- */
-
-ServiceManager.prototype.onmessage = function(msg, meta) {
-  var attrs = {};
-  var msgAry = msg.split('|');
-
-  // First work out which service this is for
-  var serviceId = msgAry.shift();
-  var service = this.services[serviceId];
-
-  // Parse optional message attributes  
-  if (service.msgAttrs.length > 0) {
-    for (var i = 0; i < service.msgAttrs.length; i++) {
-      attrs[service.msgAttrs[i]] = msgAry[i];
+  var clientTransport = {
+    write: function(serviceId, msg) {
+      var meta = {transport: 'fakedForTest'};
+      server.read(msg, meta);
     }
-    msg = msgAry.slice(service.msgAttrs.length).join('|');
-  }
- 
-  return service._server.read(msg, meta, attrs);
+  };
+
+  var server = new Server(this, serverTransport);
+  
+  var clientApi = client.register(this.paramsForClient(), this.clientApi);
+  client.connect(clientTransport);
+  this.serverApi(server);
+
+  return clientApi;
 };
 
+module.exports = Service;
 
-function loadPackageJSON() {
-  try {
-    return JSON.parse(fs.readFileSync(__dirname + '/package.json'));
-  } catch (e) {
-    throw('Error: Unable to find or parse ss-service package.json file');
-  }
-}
-
-module.exports = ServiceManager;

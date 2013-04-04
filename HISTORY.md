@@ -1,6 +1,36 @@
 WARNING: At this point *everything* is in flux and may change - drastically.
 Generally the `/example_app` should always be working.
 
+0.4.0experimental4 / 2013-04-04
+===============================
+
+#### Standalone Realtime Server and Client
+
+* Created new library: socketstream-server. This is the pure realtime server without any client asset stuff
+* socketstream-client can now run in a Node app, as well as the browser (try the repl.js example in socketstream-client)
+* socketstream-client can now discover what services are available on the server and download code over the WS
+* Callbacks are now encoded as message attributes (faster and better than forcing JSON)
+* Services can now respond to clients disconnecting
+
+#### Sessions
+
+* socketstream-server and client now support cookie-based Sessions where available
+* sessions are only fetched if the service asks for it (with `{use: {sessions: true}}`)
+* 'connect.sid' is the default cookie name to preserve compatibility with Express
+* Sessions are cached in RAM by default. Greatly speeds things up when using Sticky Sessions
+* Alternatively disable `cacheSessions` and the session store will be queried on each request
+
+#### Transports
+
+* Added SockJS Realtime Transport (rtt-sockjs). Works just as well as rtt-engineio 
+* Both transports now attempt to reconnect if the server goes down
+
+#### Other
+
+* SocketStream no longer sends `json.min.js`. Please add your own json shim if you want to support old browsers
+* Got rid of ss-message-parser - now performed higher up when we parse msg attributes
+* Subscribing to channels (for pubsub) not implemented yet
+
 
 0.4.0experimental3 / 2013-03-20
 ===============================

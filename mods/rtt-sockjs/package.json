@@ -1,13 +1,12 @@
 {
-  "name": "rtt-engineio",
-  "description": "Engine.io Realtime Transport (RTT)",
+  "name": "rtt-sockjs",
+  "description": "SockJS Realtime Transport (RTT)",
   "version": "0.0.1",
   "author": "Owen Barnes <owen@socketstream.org>",
   "engines": {
     "node": ">= 0.10.0"
   },
   "dependencies": {
-    "engine.io": "0.4.3",
-    "engine.io-client": "~0.5.0"
+    "sockjs": "~0.3.5"
   }
 }

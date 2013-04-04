@@ -17,6 +17,7 @@ module.exports = function(){
 
   // Setup Websocket Transport
   app.transport(require('rtt-engineio')({port: 3001}));
+  //app.transport(require('rtt-sockjs')({port: 3001}));
 
   // Define Realtime Services to run over the websocket
   app.service('livereload', require('rts-livereload')());

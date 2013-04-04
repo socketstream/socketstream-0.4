@@ -1,9 +1,13 @@
 {
   "name": "realtime-service-client",
-  "description": "The client-component of Realtime Service",
+  "description": "Realtime Service Client",
   "version": "0.0.1",
   "author": "Owen Barnes <owen@socketstream.org>",
   "engines": { "node": ">= 0.10.0" },
   "dependencies": {
+  },
+  "devDependencies": {
+    "mocha": "1.8.x",
+    "should": "1.2.x"
   }
 }
