@@ -11,7 +11,7 @@ Connect to the server from the browser (or remote Node process) using socketstre
 
 ```js
 var Server = require('socketstream-server');
-var engineio = require('rtt-engineio)({port: 3001});
+var engineio = require('rtt-engineio')({port: 3001});
 
 var app = new Server({root: __dirname, transport: engineio});
 
