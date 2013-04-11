@@ -47,7 +47,7 @@ function Application(options){
   var serviceLogger = function() {
     var args = Array.prototype.slice.call(arguments);
     while (args[0].length < 12) args[0] = ' ' + args[0]; // pad
-    args[0] = args[0].grey;
+    args[0] = ~args[0].indexOf('error') ? args[0].red : args[0].grey;
     console.log.apply(console, args);
   };
 
@@ -60,7 +60,6 @@ function Application(options){
   });
 
 }
-
 
 /**
  *
@@ -81,49 +80,6 @@ Application.prototype.transport = function(spec){
    this.server.transport = spec;
 };
 
-
-/**
- *
- * Use a Realtime Service
- *
- * Examples:
- *
- *    ss.service('rpc', require('rts-rpc')());
- *
- * @param {String} name of service (must be unique and < 12 chars)
- * @param {Object} service definition object (see Realtime Service Spec)
- * @param {Object} options and overrides (e.g. don't send client libs)
- * @return {Object} TBD
- * @api public
- * 
- */
-
-Application.prototype.service = function(name, definition, options){
-  if (name.length > 12) throw new Error("Service name '" + name + "' must be 12 chars or less");
-  return this.server.service(name, definition, options);
-};
-
-
-/**
- *
- * Start Realtime Server
- *
- * Examples:
- *
- *    ss.start(function(){ 
- *      console.log("Realtime server started!");
- *    });
- *
- * @param {Function} callback to execute once server starts
- * @api public
- * 
- */
-
-Application.prototype.start = function(cb) {
-  return this.server.start(cb);
-};
-
-
 // Provide an adapter so SocketStream can be plugged into Connect or Express
 Application.prototype.connectMiddleware = function(options){
   var self = this;
@@ -137,11 +93,6 @@ Application.prototype.connectMiddleware = function(options){
 
   };
 };
-
-
-
-
-
 
 
 // Define new Single Page Client

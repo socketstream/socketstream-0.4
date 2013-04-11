@@ -1,3 +1,11 @@
+"use strict";
+
+/*!
+ * SocketStream Realtime Server - Session Store
+ * Copyright(c) 2013 Owen Barnes <owen@socketstream.org>
+ * MIT Licensed
+ */
+
 var connect = require('connect');
 
 function SessionStore (options) {
@@ -5,7 +13,6 @@ function SessionStore (options) {
 
   this.store = options.store || new connect.session.MemoryStore();
   this.maxAge = options.maxAge || null;
-
 }
 
 SessionStore.prototype.create = function(sessionId) {
@@ -28,7 +35,7 @@ SessionStore.prototype.findOrCreate = function(sessionId, cb) {
     // Append our own Save method
     session.save = function(cb) {
       self.store.set(sessionId, session, cb);
-    };     
+    };
 
     cb(null, session);
   });

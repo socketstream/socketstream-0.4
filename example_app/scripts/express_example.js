@@ -1,6 +1,6 @@
 "use strict";
 
-// Example of integrating with Express 0.3
+// Example of integrating with Express 3
 //
 // (you'll need to npm install express inside /example_app to try this)
 

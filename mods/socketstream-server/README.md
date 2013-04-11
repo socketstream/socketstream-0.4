@@ -2,7 +2,7 @@
 
 A simple way to build high-performing realtime web applications that scale.
 
-Combine multiple Realtime Services to provide PubSub, RPC, Realtime Models functionality and much more.
+SocketStream Server allows you to combine multiple Realtime Services together to provide your app with PubSub, RPC, Realtime Models functionality and more.
 
 Connect to the server from the browser (or remote Node process) using socketstream-client.
 
@@ -11,7 +11,7 @@ Connect to the server from the browser (or remote Node process) using socketstre
 
 ```js
 var Server = require('socketstream-server');
-var engineio = require('rtt-engineio)({port: 3001});
+var engineio = require('rtt-engineio')({port: 3001});
 
 var app = new Server({root: __dirname, transport: engineio});
 
@@ -23,17 +23,19 @@ app.start();
 
 ### Features
 
-* designed for speed and scalability
+* designed for speed and scalability (see benchmarks below)
 * all functionality provided by modular Realtime Services
-* transport agonostic - use Engine.IO, SockJS, or any Realtime Transport
+* connect using raw WebSockets, Engine.IO, SockJS, or any other Realtime Transport
 * the client runs in the browser or a separate Node process
 * sessions provided by in-memory Connect Session Store (compatible with Express.js)
 * swap to Connect Redis Store (or similar) when you want to scale out
+* inspect, transform and drop incoming requests with Connect-style middleware
 * provides a standard logging API
+* returns errors to the client (in development mode) for easy debugging
 * ultra-light client-side code (for sending to browser)
 
 
-Most applications will require several Realtime Services simultaneously - such as pubsub, rpc, livereload, realtime model syncing, user presence and more. You are free to add as many as you like. Messages are automatically multiplexed over the websocket using minimal bytes and CPU.
+Most applications will require several Realtime Services simultaneously - such as pubsub, rpc, livereload, realtime model syncing, user presence and more. Add as many to the server as you like with the `app.service()` command. Messages are automatically multiplexed over the websocket using minimal bytes and CPU.
 
 While the client will typically be a web browser, the socketstream-client module may also run on a remote Node process.
 
@@ -45,25 +47,81 @@ SocketStream Server and Client are implemented in the SocketStream 0.4 realtime 
 As other frameworks and toolkits implement them, they will be listed here.
 
 
-### Client-side Assets
-
-Realtime Services often need to send assets to the browser (e.g. a service which works with Backbone may want to send `backbone.min.js` to the client). How you choose to do this is up to you.
-
-
-### Sessions
+### Session Store
 
 SocketStream Server supports sessions using the Connect Session Store, allowing full compatibility with Express.js.
 
-By default we use the in-memory store, but you should tell SocketStream to use a scalable session store (like Connect Redis) when running in production with:
+By default we use the in-memory store. This is fine for development, but not in production. Switch to a scalable session store (e.g. Connect Redis) with:
 
 ```js
 var app = new Server({
-  root:         __dirname,
-  transport:    engineio,
-  sessionStore: new RedisStore({port: 6379})
+  root:           __dirname,
+  transport:      engineio,
+  sessionStore:   new RedisStore({port: 6379}),
+  cacheSessions:  true
 });
 ```
 
-By default we assume you want to use Sticky Sessions. This means if you open a new browser tab, or the connection drops and needs to reconnect, you will always be routed back to the same application server. Most load balancers support this. The major advantage this gives is performance as all session data can be cached in RAM for a fixed period of time.
+### Caching Sessions
 
-Alternatively, you're able to route all incoming requests to any backend server you please. However there is a high performance price to be paid: The Session Store will need to be queried upon each incoming message. To ensure this happens, disable the local session cache with the `{cacheSessions: false}` option when starting the server.
+The `cacheSessions: true` option above works well if you're using 'Sticky Sessions'. Sticky Sessions mean a load balance must sit in front of your app servers to ensures subsequent connections from the same browser (identified by the `connect.sid` cookie) are routed to the same backend server. This gives a huge performance boost as all session data can be cached in RAM (although any changes are always saved in the Session Store).
+
+Alternatively, you're able to route all incoming requests to any backend server you please. However, under this setup you'll have to disable in-memory session caching (with `cacheSession: false`), which will force SocketStream Server to query the Session Store on each incoming message. This will naturally be much slower, unless the Session Store is intelligently caching data locally.
+
+
+### Request Middleware
+
+As incoming requests hit the server, you are able to inspect them, drop them or transform them before they are sent on to the relevant Realtime Service for processing.
+
+This functionality is implemented as middleware, exactly like in Express.
+
+Available middleware modules:
+
+`ss-rate-limiter` - limits requests per second to help protect against DOS attacks
+
+Use middlware as so:
+
+```js
+server.use(require('ss-rate-limiter')());
+
+```
+
+
+### Browser Assets
+
+Realtime Services often need to send assets to the browser (e.g. a service which works with Backbone may want to send `backbone.min.js` to the client). If you're using the SocketStream 0.4 framework this is done automatically. However, if you're using `socketstream-server` on it's own, you'll need to handle this manually by transforming this list into something your build system can use.
+
+To obtain a list of static assets to send, call:
+
+```js
+app.browserAssets();
+```
+
+
+### Benchmarks
+
+Run them using `npm run benchmarks'.
+
+On a 2009 iMac, output is currently as follows:
+
+```
+Benchmark 1: Simple echo service
+✓ Requests per second: 124000
+
+Benchmark 2: Simple echo service (with JSON)
+✓ Requests per second: 61000
+
+Benchmark 3: Simple echo service (with callbacks)
+✓ Requests per second: 69000
+
+Benchmark 4: Simple echo service (with sessions from cache)
+✓ Requests per second: 75000
+```
+
+Right now the immediate priority is to lock down the API.
+Work will go into performance tuning shortly. Contributions appreciated.
+
+
+### Licene
+
+MIT

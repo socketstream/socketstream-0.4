@@ -18,7 +18,7 @@ module.exports = function(options) {
 
   service.server = function(server) {
 
-    var publishApi = {
+    var api = {
 
       broadcast: function(){
         var eventName = arguments[0],
@@ -26,16 +26,36 @@ module.exports = function(options) {
             msg = {e: eventName, p: params};
         server.log('➙'.cyan, 'event:all'.grey, eventName);
         server.broadcast(msg);
+      },
+
+      /* CHANNELS */
+
+      subscribe: function(session, channelNames, cb) {
+        if (!session.channels) session.channels = [];
+        forceArray(channelNames).forEach(function(name) {
+          // clients can only join a channel once
+          if(!~session.channels.indexOf(name)) {
+            session.channels.push(name);
+            server.log('i'.green + ' subscribed sessionId '.grey + session.id + ' to channel '.grey + name);
+          }
+        });
+        //this._bindToSocket();
+        session.save(cb);
       }
 
     };
 
-    publishApi.all = publishApi.broadcast;
+    api.all = api.broadcast;
 
-    return publishApi;
+    return api;
 
   };
 
   return service;
 
 };
+
+
+function forceArray(input) {
+  return (typeof(input) == 'object') ? input.slice() : [input];
+}

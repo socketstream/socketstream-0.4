@@ -1,11 +1,12 @@
 {
-  "name": "realtime-model",
-  "description": "Realtime Model",
+  "name": "rtt-ws",
+  "description": "Websocket Realtime Transport (RTT)",
   "version": "0.0.1",
   "author": "Owen Barnes <owen@socketstream.org>",
   "engines": {
     "node": ">= 0.10.0"
   },
   "dependencies": {
+    "ws": "0.4.25"
   }
 }

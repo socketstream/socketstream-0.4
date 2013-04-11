@@ -55,9 +55,8 @@ module.exports = function(options) {
       };
 
       sock.onmessage = function(obj) {
-        var msg = obj.data;
-        debug('RECV', msg);
-        client.processIncomingMessage(msg);
+        debug('RECV', obj.data);
+        client.process({message: obj.data});
       };
     }
 

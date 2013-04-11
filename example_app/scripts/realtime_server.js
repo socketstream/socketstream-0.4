@@ -7,7 +7,7 @@
 var app = require('../config')();
 
 // Start listening over the websocket
-var ss = app.start(function(){
+var ss = app.server.start(function(){
   console.log('- Realtime Server running at http://127.0.0.1:3001');  
 });
 

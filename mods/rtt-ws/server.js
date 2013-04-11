@@ -1,38 +1,40 @@
 "use strict";
 
 /*!
- * SockJS Realtime Transport - Server
+ * WebSocket Realtime Transport - Server
  * Copyright(c) 2013 Owen Barnes <owen@socketstream.org>
  * MIT Licensed
  */
 
-var http = require('http');
-var sockjs = require('sockjs');
+var WebSocketServer = require('ws').Server;
 
 module.exports = function(options) {
 
   options.interface = options.interface || '0.0.0.0';
 
+  var clientCount = 0;
   var clients = {};
 
   return function(connection) {
 
-    var ws = sockjs.createServer();
+    var ws = new WebSocketServer({port: options.port});
 
     ws.on('connection', function(socket) {
+
+      // Assign SocketID
+      socket.id = String(++clientCount);
 
       clients[socket.id] = socket;
 
       connection.events.emit('client:connect', socket.id);
 
-      socket.on('data', function(message) {
+      socket.on('message', function(message) {
 
         var request = {
           message:    message,
-          transport:  'sockjs',
+          transport:  'ws',
           socketId:   socket.id,
-          clientIp:   socket.remoteAddress,
-          protocol:   socket.protocol
+          clientIp:   socket.upgradeReq.headers.host.split(':')[0]
         };
 
         connection.process(request);
@@ -46,21 +48,18 @@ module.exports = function(options) {
 
     });
 
-    var server = http.createServer();
-    ws.installHandlers(server, {prefix:'/rtt'});
-    server.listen(options.port, options.interface);
-
     return {
 
       sendToSocketId: function(socketId, msg) {
-        clients[socketId].write(msg);
+        clients[socketId].send(msg);
       },
 
       broadcast: function(msg){
         for (var socketId in clients) {
-          clients[socketId].write(msg);
+          clients[socketId].send(msg);
         }
       }
+
     };
 
   };

@@ -4,7 +4,6 @@ module.exports = function(options) {
 
   return function(connection) {
 
-    // Start Engine.IO server
     var io = engine.listen(options.port, options.server);
 
     io.on('connection', function(socket) {
@@ -15,16 +14,16 @@ module.exports = function(options) {
       connection.events.emit('client:connect', socket.id);
 
       // Process incoming messages
-      socket.on('message', function(msg){
+      socket.on('message', function(message){
 
-        // Send meta details to the responder
-        var meta = {
+        var request = {
+          message:    message,
           transport:  'engineio',
           socketId:   socket.id,
           clientIp:   remoteAddress
         };
 
-        connection.processIncomingMessage(msg, meta);
+        connection.process(request);
 
       });
 

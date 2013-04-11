@@ -15,7 +15,8 @@ var fs = require('fs');
 var path = require('path');
 var EventEmitter = require('events').EventEmitter;
 var Service = require('../realtime-service');
-var systemService = require('./lib/system');
+var Request = require('./lib/request');
+var systemService = require('./lib/system-service');
 
 
 /**
@@ -25,10 +26,12 @@ var systemService = require('./lib/system');
  * Examples:
  *
  * var server = new Server({
- *   root:    '/my/app/dir',
- *   dir:     'services',
- *   log:     console.log,
- *   events:  instanceOfAnEventEmitter
+ *   root:          '/my/app/dir',
+ *   dir:           'services',
+ *   log:           console.log,
+ *   events:        instanceOfAnEventEmitter,
+ *   sessionStore:  new RedisStore({port: 6379}),
+ *   cacheSessions: true
  * });
  * 
  * @param {Object} options
@@ -45,9 +48,10 @@ function Server(options) {
   this.root = options.root;
   this.version = loadPackageJSON().version;
 
-  this.count = 0;
+  this.serviceCount = 0;
   this.services = {};
   this.api = {};
+  this.middleware = [];
 
   this.events = options.events || new EventEmitter();
 
@@ -64,13 +68,13 @@ function Server(options) {
 
 /**
  *
- * Register a new Service Definition
+ * Use a Realtime Service
  *
  * Examples:
  *
  *    server.service('rpc', require('rts-rpc')())
  *
- * @param {String} name of service (must be unique and preferably < 12 chars)
+ * @param {String} name of service (must be unique and < 12 chars)
  * @param {Object} service definition object (see Realtime Service Spec)
  * @param {Object} options and overrides (e.g. don't send client libs)
  * @return {Object} instance of Service
@@ -81,6 +85,11 @@ function Server(options) {
 Server.prototype.service = function(name, definition, options) {
   options = options || {};
 
+  // check name length
+  if (name.length > 12) throw new Error("Service name '" + name + "' must be 12 chars or less");
+
+  // todo: check for spaces and other weird chars (as name must form a directory)
+
   // check for name uniqueness
   for (var serviceId in this.services) {
      if (this.services[serviceId].assigned.name === name)
@@ -88,7 +97,7 @@ Server.prototype.service = function(name, definition, options) {
   }
 
   var assign = {
-    id:           this.count++,
+    id:           this.serviceCount++,
     name:         name,
     api:          this.api,
     events:       this.events,
@@ -101,6 +110,86 @@ Server.prototype.service = function(name, definition, options) {
   var service = new Service(definition, assign, this);
   this.services[assign.id] = service;
   return service;
+};
+
+
+/**
+ * Use pre-request middleware for rate limiting, message sanitizing etc
+ *
+ * Works exactly like Express/Connect middleware
+ *
+ * @param {Function} middleware to execute
+ * @return {}
+ * @api public
+ *  
+ */
+
+Server.prototype.use = function(fn) {
+  var middleware = fn(this);
+  this.middleware.push(middleware);
+};
+
+
+/**
+ * Returns a list of all files which need to be sent to the browser
+ *
+ * @return {Array}
+ * @api public
+ *  
+ */
+
+Server.prototype.browserAssets = function() {
+  var output = this.transport.browserAssets || [];
+  for (var id in this.services) {
+    var service = this.services[id];
+    if (service.browserAssets && service.browserAssets.length) {
+      output = output.concat(service.browserAssets);
+    }
+  }
+  return output;
+};
+
+
+/**
+ * Get a list of all non-private services which should be sent to the client
+ *
+ * @return {Array}
+ * @api public
+ *  
+ */
+
+Server.prototype.publicServices = function() {
+  var buf = [];
+  for (var id in this.services) {
+    var service = this.services[id];
+    if (service.private) continue;
+    buf.push(service);
+  }
+  return buf;
+};
+
+
+
+/**
+ *
+ * Process Incoming Request from WebSocket Transport
+ *
+ * Examples:
+ *
+ *    server.process({message: '1|{"method": "callMe"}', socketId: 1234});
+ *
+ * @param {Object} an object containing the raw message plus info about the sender (socketId, transport, etc)
+ * @return {null}
+ * @api public
+ *  
+ */
+
+Server.prototype.process = function(params) {
+  var request = new Request(params, this);
+  execute(this.middleware, request, function(msg){
+    this.api._system.sendError(request.socketId, msg);
+    this.log('error', msg, 'for socketId', request.socketId);
+  }.bind(this));
 };
 
 
@@ -128,105 +217,33 @@ Server.prototype.start = function(cb) {
     if (serverApi) this.api[service.assigned.name] = serverApi;
   }
 
+  // Add main request processor
+  this.middleware.push(function(req) {
+    req.process();
+  });
+
   if (cb) cb(); // todo: callback when server really starts
+
+  // Return an API object of functions you can call in your server-side code
   return this.api;
 };
 
 
-
-/**
- * Returns a list of all files which need to be sent to the browser
- *
- * @return {Array}
- * @api public
- *  
- */
-
-Server.prototype.browserAssets = function() {
-  var output = this.transport.browserAssets || [];
-  for (var id in this.services) {
-    var service = this.services[id];
-    if (service.browserAssets && service.browserAssets.length) {
-      output = output.concat(service.browserAssets);
-    }
-  }
-  return output;
-};
-
-
-
-
-/**
- * Get a list of all non-private services which should be sent to the client
- *
- * @return {Array}
- * @api public
- *  
- */
-
-Server.prototype.publicServices = function() {
-  var buf = [];
-  for (var id in this.services) {
-    var service = this.services[id];
-    if (service.private) continue;
-    buf.push(service);
-  }
-  return buf;
-};
-
-
-
-/**
- *
- * Process Incoming Messages from WebSocket Transport
- *
- * Examples:
- *
- *    server.processIncomingMessage('1|{"method": "callMe"}', {socketId: 1234});
- *
- * @param {String} the raw message in String form
- * @param {Object} an object containing details about the sender (socketId, sessionId, etc)
- * @return {null}
- * @api public
- *  
- */
-
-Server.prototype.processIncomingMessage = function(msg, meta) {
-  var attrs = {};
-  var msgAry = msg.split('|');
-
-  // First work out which service this is for
-  var serviceId = msgAry.shift();
-  var service = this.services[serviceId];
-
-  // Parse optional message attributes  
-  if (service.msgAttrs.length > 0) {
-    for (var i = 0; i < service.msgAttrs.length; i++) {
-      attrs[service.msgAttrs[i]] = msgAry.shift();
-    }
-  }
-
-  // Recombine message
-  msg = msgAry.join('|');
-
-  // If service doesn't require sessions, process right away
-  if (!service.use.sessions) return service.server.read(msg, meta, attrs);
-
-  // Otherwise, get Session object from in-memory cache or session store
-  this.api._system.getSession(meta.socketId, function(err, session){
- 
-    meta.session = session;
-
-    // Drop messages if we don't have a session
-    if (meta.session) return service.server.read(msg, meta, attrs);
-
- });
-
-};
-
 Server.prototype._registerSystemService = function() {
   this.service('_system', systemService(this));
 };
+
+
+/* Private Helpers */
+
+function execute(stack, request, cb) {
+  function exec(req, res, i){
+    stack[i].call(stack, req, res, function(){
+      exec(req, res, ++i);
+    });
+  }
+  exec(request, cb, 0);
+}
 
 
 function loadPackageJSON() {
@@ -236,5 +253,8 @@ function loadPackageJSON() {
     throw('Error: Unable to find or parse ss-service package.json file');
   }
 }
+
+
+Server.mockTransport = require('./lib/mock-transport');
 
 module.exports = Server;

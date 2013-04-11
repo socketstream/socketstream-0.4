@@ -2,24 +2,25 @@
 
 /**
  * Example of connecting to a remote SocketStream server and querying it with a REPL
- * Note: The Realtime Transport you use must support this. Engine.IO does, SockJS doesn't.
+ * Note: The Realtime Transport must be the same as used on the server and must
+ * support Node. rtt-ws and rtt-engineio do. rtt-sockjs does not.
  **/
 
 var repl = require('repl');
-var SSClient = require('../index');
-var RTT = require('../../rtt-engineio')();
+var Client = require('../index');
+var engineio = require('../../rtt-engineio')();
 
-var transport = RTT.client({port: 3001, host: 'localhost', debug: false});
-var client = new SSClient();
+var transport = engineio.client({port: 3001, host: 'localhost', debug: false});
+var app = new Client({transport: transport});
 
-client.connect(transport, function(err, info){
+app.connect(function(err, info){
 
   console.log("Connected to SocketStream Server %s with Session ID %s", info.version, info.sessionId);
   
-  client.discover({}, function(){
+  app.discover({}, function(){
     console.log("Type `ss` to see which services are available");
     var r = repl.start({prompt: 'SocketStream > '});
-    r.context.ss = client.api;
+    r.context.ss = app.api;
   });
 
 });

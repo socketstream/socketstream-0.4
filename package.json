@@ -1,7 +1,7 @@
 {
   "name":         "socketstream-0.4",
   "description":  "A fast, streaming Node.js framework dedicated to building realtime single-page apps",
-  "version":      "0.4.0experimental3",
+  "version":      "0.4.0experimental5",
   "homepage":     "http://www.socketstream.org",
   "author":       "Owen Barnes <owen@socketstream.org>",
   "repository": {
