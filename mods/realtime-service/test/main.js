@@ -1,5 +1,5 @@
 var should = require('should');
-var ServiceManager = require('../index');
+var ServiceManager = require('../');
 var manager = new ServiceManager();
 
 var serviceDef = {

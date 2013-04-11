@@ -10,17 +10,17 @@ function Server(service, transport) {
   this.events = service.assigned.events;
 }
 
-Server.prototype.read = function(msg, meta, attrs) {
+Server.prototype.read = function(req) {
   var self = this; 
 
   // Try to fetch Callback ID
-  var cbId = Number(attrs.callbackId);
-  if (cbId) meta._callbackId = cbId;
+  var cbId = Number(req.attributes.callbackId);
+  //if (cbId) meta._callbackId = cbId;
 
-  if (this.service.use.json) msg = JSON.parse(msg);
+  if (this.service.use.json) req.message = JSON.parse(req.message);
 
-  this.onmessage(msg, meta, function(msg){
-    self.sendToSocketId(meta.socketId, msg, {callbackId: cbId});
+  this.onmessage(req.message, req, function(msg){
+    self.sendToSocketId(req.socketId, msg, {callbackId: cbId});
   });
 };
 

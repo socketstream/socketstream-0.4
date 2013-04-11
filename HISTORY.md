@@ -1,6 +1,22 @@
 WARNING: At this point *everything* is in flux and may change - drastically.
 Generally the `/example_app` should always be working.
 
+0.4.0experimental5 / 2013-04-11
+===============================
+
+#### SocketStream Server
+
+* Now supports request middleware. Easily log and validate messages before they are sent on to Realtime Services.
+* Added the first peice of middleware: ss-rate-limiter (helps prevent Denial of Service attacks)
+* New Benchmark Suite! Run it using `npm run benchmarks`. This will be handy for tuning performance in the future
+
+
+#### Transports
+
+* New ultra-fast native (no fallbacks) WebSocket Tranport added: `rtt-ws`. Also works as a Node client
+
+
+
 0.4.0experimental4 / 2013-04-04
 ===============================
 
@@ -30,6 +46,7 @@ Generally the `/example_app` should always be working.
 * SocketStream no longer sends `json.min.js`. Please add your own json shim if you want to support old browsers
 * Got rid of ss-message-parser - now performed higher up when we parse msg attributes
 * Subscribing to channels (for pubsub) not implemented yet
+
 
 
 0.4.0experimental3 / 2013-03-20

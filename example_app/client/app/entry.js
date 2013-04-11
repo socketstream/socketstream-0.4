@@ -12,7 +12,7 @@ var app = new SocketStream();
 // to see *exactly* what's being sent to the client
 require('./system')(app);
 
-app.connect(app.transport, function(err, info) {
+app.connect(function(err, info) {
 
   console.log('Connected to the server!', info);
 

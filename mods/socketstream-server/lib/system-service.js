@@ -53,6 +53,7 @@ module.exports = function(services){
 
       };
 
+      // Respond to incoming requests
       server.onmessage = function(msg, meta, reply){      
         var command = msg.c;
         if (commands[command]) {
@@ -64,11 +65,23 @@ module.exports = function(services){
 
       // Return server-side API
       return {
+
         getSession: function(socketId, cb) {
           var sessionId = socketIdsToSessionIds[socketId];
           var cache = socketIdsToSessionCache[socketId];
-          return cache ? cb(null, cache) : sessionStore.findOrCreate(sessionId, cb);
+          if (cache) return cb(null, cache);
+          sessionStore.findOrCreate(sessionId, function(err, session){
+            socketIdsToSessionCache[socketId] = session;
+            return cb(err, session);
+          });
+        },
+
+        // Send an Error Message to the client (but only in development)
+        sendError: function(socketId, message){
+          server.sendToSocketId(socketId, {type: 'error', message: message});
         }
+
+
       };
 
     }

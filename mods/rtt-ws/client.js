@@ -1,4 +1,12 @@
-var eio = require('engine.io-client');
+"use strict";
+
+/*!
+ * WebSocket Realtime Transport - Client
+ * Copyright(c) 2013 Owen Barnes <owen@socketstream.org>
+ * MIT Licensed
+ */
+
+var WebSocket = require('ws');
 
 module.exports = function(options) {
 
@@ -16,23 +24,46 @@ module.exports = function(options) {
   var reconnectionAttempts = 0;
   var reconnecting = false;
 
-  // TODO: Move this to transport lib
-  var debug = function() {
+  function debug() {
     var args = Array.prototype.slice.call(arguments);
     if (options.debug) console.log.apply(console, args);
-  };
+  }
 
   // Connect
   return function (client) {
-    
+
+    var ws;
     var url = options.protocol + '://' + options.host + ':' + options.port;
+
+    function connect(){
+
+      debug('Connecting to', url);
+      
+      ws = new WebSocket(url);
+
+      ws.onopen = function() {
+        return client.status.emit('open');
+      };
+
+      ws.onmessage = function(obj, flags) {
+        // flags.binary will be set if a binary data is received
+        // flags.masked will be set if the data was masked
+        debug('RECV', obj.data);
+        client.process({message: obj.data});
+      };
+
+      ws.onclose = function() {
+        client.status.emit('close');
+        reconnect();
+      };
+
+    }
 
     function reconnect() {
       if (!attemptReconnect) return;
 
       // Attempt reconnection
       // Note: most of this logic is from socket.io-client at the moment
-      var self = this;
       reconnectionAttempts++;
 
       if (reconnectionAttempts > options.reconnection.attemps) {
@@ -46,56 +77,26 @@ module.exports = function(options) {
         reconnecting = true;
         var timer = setTimeout(function(){
           debug('Attempting reconnect...');
-
-          // unlike sockjs, engine.io reuses the same connection instance
-          socket.open(function(err){
-            if (err) {
-              debug('Reconnect attempt error :(');
-              reconnect();
-              return client.status.emit('reconnect_error', err.data);
-            } else {
-              debug('Reconnect success! :)');
-              reconnectionAttempts = 0;
-              reconnecting = false;
-              return client.status.emit('reconnected');
-            }
-          });
-
+          connect();
         }, delay);
       }
     }
 
-    debug('Connecting to', url);
-
-    var socket = new eio(url);
-
-    socket.on('open', function(){
-      return client.status.emit('open');
-    });
-
-    socket.on('close', function() {
-      client.status.emit('close');
-      reconnect();
-    });
-
-    socket.on('message', function(msg) {
-      debug('RECV', msg);
-      client.process({message: msg});
-    });
-
+    connect();
 
     // Return API
     return {
 
       disconnect: function() {
         attemptReconnect = false;
-        socket.close();
+        ws.close();
       },
 
       write: function(msg) {
         debug('SEND', msg);
-        socket.send(msg);
+        ws.send(msg);
       }
+
     };
 
   };

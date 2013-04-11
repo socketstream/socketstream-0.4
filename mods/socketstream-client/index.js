@@ -29,7 +29,8 @@ function SocketStream(options) {
   this.api = {};
   this.status = new EE();
   this.version = '0.0.1';
-  
+
+  this.transport = options.transport || null;
   this.sessionCookieName = options.sessionCookieName || 'connect.sid';
 
   this._registerSystemService();
@@ -58,6 +59,17 @@ SocketStream.prototype.provide = function(params, handler) {
 
 
 /**
+ *  Load all services in from an Array (used when testing on the server)
+ */
+
+SocketStream.prototype.load = function(services) {
+  services.forEach(function(service){
+    this.provide(service.paramsForClient(), service.clientApi);   
+  }.bind(this));
+};
+
+
+/**
  *  Discover which services are available and download the client-side
  *  code from the server.
  */
@@ -71,8 +83,8 @@ SocketStream.prototype.discover = function(options, cb) {
  *  Process an incoming message string
  */
 
-SocketStream.prototype.processIncomingMessage = function(msg) {
-  var msgAry = msg.split('|');
+SocketStream.prototype.process = function(req) {
+  var msgAry = req.message.split('|');
   var serviceId = msgAry.shift();
   var service = this.services[serviceId];
   if (service) {
@@ -87,12 +99,11 @@ SocketStream.prototype.processIncomingMessage = function(msg) {
  *  Attempt to connect. When successful, transmit sessionId
  */
 
-SocketStream.prototype.connect = function(transport, cb) {
-  var self = this;
-  this.connection = transport(this);
+SocketStream.prototype.connect = function(cb) {
   this.status.on('open', function(){
-    self.api._system.connect(cb);  
-  });
+    this.api._system.connect(cb);  
+  }.bind(this));
+  this.connection = this.transport(this);
 };
 
 
@@ -137,6 +148,13 @@ SocketStream.prototype._setSessionId = function(value) {
 SocketStream.prototype._registerSystemService = function() {
   var self = this;
   this.provide({id: "0", name: "_system", private: true, use: {json: true, callbacks: true}}, function(client){
+
+    // If a request to the server returns an error, show it here
+    client.onmessage = function(obj){
+      if (obj.type === 'error') {
+        console.error('SocketStream Server Error: ' + obj.message);
+      }
+    };
     
     return {
 
@@ -144,7 +162,8 @@ SocketStream.prototype._registerSystemService = function() {
       connect: function(cb) {
         client.send({c: 'connect', v: self.version, sessionId: self._getSessionId()}, function(clientInfo){
           self._setSessionId(clientInfo.sessionId);
-          cb(null, clientInfo);
+          self.status.emit('ready');
+          if (cb) cb(null, clientInfo);
         });
       },
 

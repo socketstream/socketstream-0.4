@@ -6,7 +6,9 @@
  * MIT Licensed
  */
 
-function Service(services, params) {
+/* jshint browser: true, node: true */
+
+function Client(services, params) {
   this.services = services;
 
   this.id = params.id;
@@ -23,7 +25,7 @@ function Service(services, params) {
   if (this.use.callbacks) this.msgAttrs.push('callbackId');
 }
 
-Service.prototype.read = function(msgAry) {
+Client.prototype.read = function(msgAry) {
   var attrs = {}, cb = null;
 
   // Parse message attributes  
@@ -41,7 +43,13 @@ Service.prototype.read = function(msgAry) {
   if (cbId) cb = this.cbStack[cbId];
 
   // Decode to object
-  if (this.use.json) msg = JSON.parse(msg);
+  if (this.use.json) {
+    try {
+      msg = JSON.parse(msg);
+    } catch (e) {
+      console.log(this);
+    }
+  }
 
   // Fire callback or pass to generic onmessage handler
   (cb || this.onmessage)(msg);
@@ -50,7 +58,7 @@ Service.prototype.read = function(msgAry) {
   if (cbId) delete this.cbStack[cbId];
 };
 
-Service.prototype.send = function(msg, cb) {
+Client.prototype.send = function(msg, cb) {
   var msgAry = [this.id];
 
   // Encode to JSON
@@ -74,7 +82,7 @@ Service.prototype.send = function(msg, cb) {
  * Browser-friendly debug (won't break in old IE)
  */
 
-Service.prototype.debug = function() {
+Client.prototype.debug = function() {
   var args = Array.prototype.slice.call(arguments);
   args.unshift('DEBUG ' + this.name + ':');
   if (this.options.debug) {
@@ -83,4 +91,4 @@ Service.prototype.debug = function() {
   }
 };
 
-module.exports = Service;
+module.exports = Client;
