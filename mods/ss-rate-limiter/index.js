@@ -17,7 +17,7 @@
 module.exports = function(options) {
 
   options = options || {};
-  options.maxRequestsPerSecond = 8;
+  options.maxRequestsPerSecond = options.maxRequestsPerSecond || 8;
 
   var rpsSocketIds = {};
   var warnedSocketIds = {};
