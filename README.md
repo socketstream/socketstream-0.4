@@ -1,13 +1,10 @@
-# SocketStream 0.4 Early Experimentation
+# SocketStream 0.4
 
 SocketStream is a Realtime Web Framework with a focus on high performance and extensibility.
 
+Current Status: Pre-alpha. See below for full details.
+
 [View Latest Changes](https://github.com/socketstream/socketstream-0.4/blob/master/HISTORY.md)
-
-
-## What's going on here?
-
-I'm releasing previews of 0.4 as it takes shape over the coming months. While the code here is incomplete and subject to change, you should always be able to run the example app (see below for instructions).
 
 
 ## Goals
@@ -27,24 +24,32 @@ I'm releasing previews of 0.4 as it takes shape over the coming months. While th
 * personal tastes (e.g. CoffeeScript) supported via optional modules
 
 
-## New Modular Design
+## Introduction
 
-The SocketStream framework is a 'meta module' which integrates the following standalone modules for maximum productivity:
+The SocketStream Framework is our opinionated take on the best way to build high-performing realtime web applications that scale. The framework gets you up and running quickly with "best practices" derived from years of experience in this space.
+
+However, SocketStream is not your regular monolithic beast of a framework. It's comprised of many individual modules which work great on their own, such as `socketstream-server` which processes incoming requests over a websocket.
+
+Hence you can think of SocketStream as more of a toolkit. Should your needs change in the future, you can easily substitute any part of it for something else.
+
+**The SocketStream family of modules**
 
 **[socketstream-server](https://github.com/socketstream/socketstream-0.4/blob/master/mods/socketstream-server/README.md)** Responds to requests over websockets  
 **[socketstream-client](https://github.com/socketstream/socketstream-0.4/blob/master/mods/socketstream-client/README.md)** Connects to the server from the browser or other Node process  
 
-TODO: Separate out Single Page Client and Asset Building.
+TODO: Separate-out Single Page Client and Asset Building.
 
 
-## What's working so far?
+## Current Status
 
-Right now we have basic client-side asset serving (excluding templates) working. We also have basic PubSub, RPC and Live Reload working over the websocket. These are all implemented as Realtime Services (the new name for Request Responders), however the API will need to change to allow each service to be tested. There are many big problems still to solve such as how best to do sessions, auth, and connection status. Expect frequent commits.
+I'm now reasonably happy with the overall design of `socketstream-server` and `socketstream-client`, the two realtime modules at the heart of the SocketStream Framework. Both are now feature complete. While the internal APIs still need a little tweaking and some 0.3 functionality is still missing from the Realtime Services, mostly what's left to do is performance tuning, testing, and documentation writing.
 
-If you see a better way to architect or design something, **please** let me know or submit a pull request. Nothing is set in stone at this stage and my primary concern is getting the design right for the long term.
+As for the Single Page Client, Asset Building/Packing, and client-side module system - these will continue to feature in the SocketStream framework, but still need a lot of work. The first step is to extract them out into their own standalone modules. Expect this area to change over the next few months.
+
+Regardless, you should always be able to run the example app (see below for instructions). Please note: If you're looking for something stable and reasonably mature, please use SocketStream 0.3 until further notice. The contents of this experimental repo will be moved to https://github.com/socketstream/socketstream shorty.
 
 
-## Why SocketStream
+## Why Choose SocketStream
 
 Integrating all the bits you need to make a high-performing, scalable realtime web app is hard.
 
@@ -53,15 +58,6 @@ At one end of the scale there's Meteor: a great all-in-one solution, but one tha
 Somewhere in the middle of these two extremes lies SocketStream. A modular and highly extensible framework which integrates best-of-breed modules to solve common problems. We take care of all the boring stuff (serving client code as modules, session, asset packing, etc) so you can dive straight in and start creating your app.
 
 Add whatever functionality your app needs (e.g. RPC, PubSub, Realtime Models) by combining Realtime Services together, then take advantage of our slick build system which wires up everything on your behalf. Best of all, everything is implemented as standalone `npm` modules, so you're free to change any part of it in the future without having to start from scratch.
-
-
-## Warning
-
-**0.3 users:** Don't be alarmed. What you see here is completely unfinished and missing many of the essential features present in SocketStream 0.3. They will return over the coming weeks.
-
-**New users:** If you're looking for something stable and reasonably mature, please use SocketStream 0.3 until further notice.
-
-Note: I've deliberately put this code in a new repo so we can discuss crazy new ideas in Github Issues without scaring or confusing existing 0.3 users. I'll move the code over to the `master` branch of the main repo when I feel the API is relatively stable and the overall design is sound.
 
 
 ## Try it out
@@ -434,15 +430,40 @@ app.route('/', function(req, res){
 
 That's all for now. I'm building the API Guide and Tutorial bit by bit as each section is complete and I'm reasonably happy with the API.
 
-I will document the new `app.service()` command soon.
+
+## FAQs
+
+**Q: How does SocketStream compare to Meteor?**
+
+Both SocketStream and Meteor are designed to get you up and running quickly. While Meteor most definitely wins when it comes to instant realtime models and deployment, SocketStream admittedly takes a little bit longer to understand how the various pieces fit together.
+
+However, if you're prepared to put in the initial effort, you'll be rewarded with much greater flexibility, true NPM support, optional Express integration, 100% Node Core conventions (no fibers), and a choice of ways to store your data (not just Mongo).
+
+Better still, as the SocketStream framework is simply a collection of individual modules, if you decide later that you don't like something (e.g. our asset build system), it's very easy to use something else (like Grunt) instead. Use as little or as much of the SocketStream ecosystem as you want. 
 
 
+**Q: How does SocketStream compare to Socket.IO?**
 
-## Major changes since 0.3 so far
+Socket.IO is a fantastic simple realtime framework which offers pubsub and channel support. SocketStream doesn't include any functionality like this in the core, instead it uses modular Realtime Services to provide RPC, PubSub and much more - including Realtime Models. SocketStream also offers the ability to run on multiple transports (including Engine.IO, as used by Socket.IO), a session store that works with Express apps, and a way to intercept incoming messages before they are processed.
 
+
+**Q: How does SocketStream compare to SockJS?**
+
+SockJS is just a websocket transport with fallbacks. You can use it with SocketStream without changing any of your application code.
+
+
+**Q: Can I use SocketStream with PhoneGap?**
+
+Yes. You will probably need to use (Persist.js)[https://github.com/jeremydurham/persist-js] to handle the sessions cookies. We've not tried this ourselves yet, but when we do we'll publish a full guide.
+
+
+**Q: What are the major changes since 0.3?**
+
+* Everything separated into standalone modules
+* Asset Server and Realtime Server can now run in separate processes
 * Vanilla JavaScript for maximum readability
-* Request Responders are now provisionally called Services
-* Live Reload, PubSub and RPC are now implemented as bundled Services (all lazy-loaded)
+* Request Responders are now called Realtime Services, a new vendor-neutral open standard
+* Live Reload, PubSub and RPC are now implemented as optional Realtime Services
 * No need to structure your app dir in a particular way (though still recommended!)
 * More emphasis on providing an API and Tutorial and less on generating / modifying files
 * Asset tags are now injected into HTML automatically
@@ -450,11 +471,12 @@ I will document the new `app.service()` command soon.
 * No longer logs to `console.log` by default
 
 
+
 ## License 
 
 (The MIT License)
 
-Copyright (c) 2012 Owen Barnes &lt;owen@socketstream.org&gt;
+Copyright (c) 2000 - 2013 Owen Barnes &lt;owen@socketstream.org&gt;
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
