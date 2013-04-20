@@ -110,7 +110,7 @@ As incoming requests hit the server, you are able to inspect them, drop them or 
 
 Available middleware modules:
 
-[**prism-rate-limiter**] - limits requests per second to help protect against DOS attacks
+[**prism-rate-limiter**](https://github.com/socketstream/prism-rate-limiter) - limits requests per second to help protect against DOS attacks
 
 Use middlware as so:
 

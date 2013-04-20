@@ -16,9 +16,9 @@ module.exports = function(){
   app.log.debug = console.log;
 
   // Select a Realtime (WebSocket) Transport
-  app.transport(require('rtt-engine.io')());
+  //app.transport(require('rtt-engine.io')());
   //app.transport(require('rtt-sockjs')());
-  //app.transport(require('rtt-ws')());
+  app.transport(require('rtt-ws')());
 
   // Define Realtime Services to run over the websocket
   app.service('livereload', require('rts-livereload')());

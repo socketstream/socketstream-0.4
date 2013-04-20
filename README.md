@@ -20,7 +20,7 @@ Once this process is complete, SocketStream (the framework) will contain little 
 
 ## Progress so far
 
-The first major module to be released as a standalone project is [**Prism**](https://www.github.com/socketstream/prism), the realtime server powering SocketStream 0.4. Coming soon will be **Spa** - our solution to managing client assets in a Single Page Application.
+The first major module to be released as a standalone project is [**Prism**](https://github.com/socketstream/socketstream-0.4/tree/master/mods/prism), the realtime server powering SocketStream 0.4. Coming soon will be **Spa** - our solution to managing client assets in a Single Page Application.
 
 Even though things are moving rapidly, you should always be able to run the example app (see below for instructions). Please note: If you're looking for something stable and reasonably mature, please continue to use SocketStream 0.3 until further notice.
 

@@ -4,15 +4,20 @@
   "version": "0.0.1",
   "author": "Me <me@mydomain.com>",
   "private": true,
-  "engines": { "node": ">= 0.8.0" },
+  "engines": {
+    "node": ">= 0.8.0"
+  },
   "scripts": {
     "start": "node app.js"
   },
   "dependencies": {
-    "rtt-engine.io": "~0.0.1",
+    "rtt-ws": "~0.0.1",
     "rts-livereload": "~0.0.1",
     "rts-rpc": "~0.0.1",
     "rts-pubsub": "~0.0.1",
-    "prism-rate-limiter": "~0.0.1"
+    "prism-rate-limiter": "~0.0.1",
+    "jade": "~0.29.0",
+    "nib": "~0.9.1",
+    "stylus": "~0.32.1"
   }
 }
