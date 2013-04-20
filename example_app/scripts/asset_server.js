@@ -4,24 +4,34 @@
 //
 // Serves HTML, CSS, client-side JS, images etc
 
-var http = require('http'),
-    app = require('../config')();
+var http = require('http');
+var app = require('../config')();
+var port = 3000;
 
-// Support Jade
-app.preprocessor('jade', require('jade-stream')());
-app.preprocessor('styl', require('stylus-stream')());
 
 // Define a Single Page Client
-var mainClient = app.client('views/main.jade', {
+var view = app.client('views/main.jade', {
   css:  ['css/reset.css', 'css/main.styl'],
-  libs: ['libs/jquery.min.js'],
+  js:   ['libs/jquery.min.js'],
   tmpl: ['tmpl']
 }, {baseDir: 'client'});
 
+// Use Jade for HTML
+view.engine('jade', require('jade').__express);
+
+// Use Stylus for CSS
+view.engine('styl', function(path, options, cb){
+  var styl = require('fs').readFileSync(path).toString();
+  require('stylus')(styl)
+    .set('filename', path)
+    .use(require('nib')())
+    .render(cb);
+});
+
 // Serve it
-app.route('/', mainClient);
+app.route('/', view);
 
 // Start HTTP Server
-var httpServer = http.createServer(app.router()).listen(3000, '127.0.0.1');
+var httpServer = http.createServer(app.router()).listen(port, '127.0.0.1');
 
-console.log('- Standalone Asset Server running at http://127.0.0.1:3000');
+console.log('- Standalone Asset Server running at http://127.0.0.1:%d', port);

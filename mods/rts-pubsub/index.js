@@ -1,12 +1,13 @@
 "use strict";
 
-/*
-
-  Pub Sub Service
-  ---------------
-  Publishes events to all connected clients
-
-*/
+/*!
+ * PubSub Service
+ * --------------
+ * Allow the server to publish to an event emitter on the client
+ *
+ * Copyright(c) 2013 Owen Barnes <owen@socketstream.org>
+ * MIT Licensed
+ */
 
 require('colors');
 

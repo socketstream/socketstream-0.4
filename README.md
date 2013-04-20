@@ -1,52 +1,39 @@
 # SocketStream 0.4
 
-SocketStream is a Realtime Web Framework with a focus on high performance and extensibility.
+**Current Status: Pre-alpha**
 
-Current Status: Pre-alpha. See below for full details.
+SocketStream is a Node.js Realtime Web Framework with a focus on high performance and extensibility.
 
 [View Latest Changes](https://github.com/socketstream/socketstream-0.4/blob/master/HISTORY.md)
 
 
-## Goals
+## April 2013 Update
 
-* high performance
-* minimal bandwidth
-* reliability at scale
-* easy to get started
-* transport agnostic
-* minimal client-side code
-* excellent mobile compatibility
-* idiomatic Node.js code style throughout
-* lazy-load only the parts you choose to use
-* chooses simplicity and high performance over SEO compatibility
-* provide APIs to support Models, Presence and more (as Stream Services)
-* only absolute essentials live in the core
-* personal tastes (e.g. CoffeeScript) supported via optional modules
+After three releases, two years of experimentation and over 2500 followers on github, SocketStream is no longer a proof of concept.
 
+We know people love the ideas in previous versions and want to build solid, scalable realtime apps this way. That's why a lot work is underway to make everything production-ready and simpler to maintain in the long term.
+
+To achieve this we're dividing up the various components that make up SocketStream into smaller, standalone modules. The result will be a much simpler framework which will provide value to those who like some of the ideas in SocketStream, but don't want to buy into the entire stack.
+
+Once this process is complete, SocketStream (the framework) will contain little or no code. It will simply integrate other modules in an (even more!) opinionated way to get you up and running instantly using best practices. However, unlike other realtime frameworks out there, you'll always retain the freedom to change any part of the stack later down the line.
+
+
+## Progress so far
+
+The first major module to be released as a standalone project is [**Prism**](https://www.github.com/socketstream/prism), the realtime server powering SocketStream 0.4. Coming soon will be **Spa** - our solution to managing client assets in a Single Page Application.
+
+Even though things are moving rapidly, you should always be able to run the example app (see below for instructions). Please note: If you're looking for something stable and reasonably mature, please continue to use SocketStream 0.3 until further notice.
+
+
+<hr>
 
 ## Introduction
 
-The SocketStream Framework is our opinionated take on the best way to build high-performing realtime web applications that scale. The framework gets you up and running quickly with "best practices" derived from years of experience in this space.
+Do you want to be up and running in minutes with a framework that tells you exactly what to do? Or do you prefer lots of small modules you can customize as your needs change? SocketStream 0.4 aims to give you the best of both.
 
-However, SocketStream is not your regular monolithic beast of a framework. It's comprised of many individual modules which work great on their own, such as `socketstream-server` which processes incoming requests over a websocket.
+Start off with our opinionated end-to-end framework which tells you exactly where to put your files, how to write your client-side code, and infuses "best practices" derived from years of experience in this space.
 
-Hence you can think of SocketStream as more of a toolkit. Should your needs change in the future, you can easily substitute any part of it for something else.
-
-**The SocketStream family of modules**
-
-**[socketstream-server](https://github.com/socketstream/socketstream-0.4/blob/master/mods/socketstream-server/README.md)** Responds to requests over websockets  
-**[socketstream-client](https://github.com/socketstream/socketstream-0.4/blob/master/mods/socketstream-client/README.md)** Connects to the server from the browser or other Node process  
-
-TODO: Separate-out Single Page Client and Asset Building.
-
-
-## Current Status
-
-I'm now reasonably happy with the overall design of `socketstream-server` and `socketstream-client`, the two realtime modules at the heart of the SocketStream Framework. Both are now feature complete. While the internal APIs still need a little tweaking and some 0.3 functionality is still missing from the Realtime Services, mostly what's left to do is performance tuning, testing, and documentation writing.
-
-As for the Single Page Client, Asset Building/Packing, and client-side module system - these will continue to feature in the SocketStream framework, but still need a lot of work. The first step is to extract them out into their own standalone modules. Expect this area to change over the next few months.
-
-Regardless, you should always be able to run the example app (see below for instructions). Please note: If you're looking for something stable and reasonably mature, please use SocketStream 0.3 until further notice. The contents of this experimental repo will be moved to https://github.com/socketstream/socketstream shorty.
+Should your needs change in the future, you'll find SocketStream 0.4 is composed of many smaller modules you can use on their own, or in combination with other modules on `npm`, to give you the custom tech stack of your dreams.
 
 
 ## Why Choose SocketStream
@@ -57,7 +44,7 @@ At one end of the scale there's Meteor: a great all-in-one solution, but one tha
 
 Somewhere in the middle of these two extremes lies SocketStream. A modular and highly extensible framework which integrates best-of-breed modules to solve common problems. We take care of all the boring stuff (serving client code as modules, session, asset packing, etc) so you can dive straight in and start creating your app.
 
-Add whatever functionality your app needs (e.g. RPC, PubSub, Realtime Models) by combining Realtime Services together, then take advantage of our slick build system which wires up everything on your behalf. Best of all, everything is implemented as standalone `npm` modules, so you're free to change any part of it in the future without having to start from scratch.
+Add whatever functionality your app needs (e.g. RPC, PubSub, Realtime Models) by combining Realtime Services together, then take advantage of our slick build system which wires up everything on your behalf. Best of all, everything is implemented as standalone `npm` modules, so you're free to change any part of the stack in the future without having to start from scratch.
 
 
 ## Try it out
@@ -85,350 +72,9 @@ node app.js
 Note: Stylus and Jade won't be required to use SocketStream 0.4, nor will any of the other optional modules. They're just included in this repo to aid development for now.
 
 
-## API
+## API & Tutorial
 
-Create a new app instance with:
-
-```js
-var SocketStream = require('socketstream'),
-    app = SocketStream();
-```
-
-### `app` Properties
-
-* **app.version** _(String)_ : Version number taken from package.json
-* **app.root** _(String)_ : Your application's root directory
-* **app.env** _(String)_ : Environment name as passed by `NODE_ENV` (defaults to `development`)
-* **app.log** _(Object)_ : Supply functions (such as `console.log`) to `debug`, `info` and `error`
-* **app.eb** _(EventEmitter)_ : System Event Bus. Allows your app to listen out for events (e.g. client disconnects) and perform an action. Full documentation coming soon
-
-
-### `app` Methods
-
-#### Essentials
-
-* **app.start**(httpServer) : **Start the Server**
-  * Tells SocketStream to bind the websocket transport to the HTTP server and wire everything up
-  * httpServer _(Object)_ : HTTP server instance to bind the websocket transport to
-  * Returns _(Object)_ : a SocketStream server instance
-* **app.transport**(module) : **Specify a websocket transport module**
-  * Specify which WebSocket (or other persistent) transport should be used (e.g. Engine.IO)
-  * module _(Function)_ : SocketStream-compatible wrapper around a transport
-* **app.service**(moduleOrName, options) : **Use a Websocket Service Stream**
-  * Each new Service establishes a full duplex stream on the client and server and can optionally send code to the client and return a server-side API
-  * moduleOrName _(String)_ : When String, load an internal (bundled) Stream Service of that name
-  * moduleOrName _(Object)_ : When Object, define a new Service by passing 'server' and 'client' functions
-  * options _(Object)_ : Pass an options object to the Service
-
-
-#### Single Page Clients
-
-* **app.client**(viewPath, assetPaths) : **Define a new Single Page Client**
-  * viewPath _(String)_ : file name of main `.html` (or `.jade` etc) file to be served
-  * assetPaths _(Object)_ : specifies a list of assets to automatically serve (`css`, `mods`, `libs`) in the form of Arrays
-  * Returns _(Object)_ : a Single Page Client object (API documented below)
-* **app.preprocessor**(fileExtension, module) : **Add a Code Preprocessor (Formatter)**
-  * Tells SocketStream to automatically pipe() files of `fileExtension` through `module` before output
-  * fileExtension _(String)_ : a file extension (e.g. `jade`)
-  * module _(Function)_ : any duplex stream (e.g. a streaming Jade parser)
-* **app.serveAssets**(request) : **Respond to HTTP requests for Client Assets (JS, CSS, etc) and static files**
-  * request _(Object)_ : a HTTP Request object
-  * Returns _(Object)_ : a readable stream to be piped() to a HTTP response object
-
-
-#### HTTP Router
-
-* **app.route**(mountUrl, clientOrFunction) : **Add a new HTTP Route**
-  * mountUrl _(String)_ : the URL for mounting this client (e.g. `/` or `/admin`)
-  * clientOrFunction _(Function)_ : either an instance of a Single Page Client, or a function taking a `req` and `res` param
-* **app.router**() : **Add a new HTTP Route**
-  * Returns a very simple function that will recursively route incoming requests until a matching client (as specified with the `app.route()` function) can be found
-  * Returns _(Function)_ : a function accepting `req` and `res` params, suitable for passing to `http.createServer()`
-
-
-### `client` Methods
-
-`app.client()` returns a new Single Page Client. This is the API
-
-* **client.html**(request) : **Return the raw HTML (unprocessed)**
-  * request _(HttpRequest)_
-  * Returns _(Stream)_ : a stream of HTML which can be piped to `response`
-* **client.serveAssets**(request) : **Serve CSS/JS assets**
-  * request _(HttpRequest)_
-  * Returns _(Stream)_ : a stream of CSS or JS which can be piped to `response`
-* **client.serveStatic**(request, dir) : **Serve Static Files**
-  * request _(HttpRequest)_
-  * dir _(String)_ : root dir to serve static files from (e.g. `/client/public`)
-  * Returns _(Stream)_ : a stream of static file data which can be piped to `response`
-* **client.view**(request) : **Serve processed HTML**
-  * This is the recommended way to serve HTML views. It injects tags and preprocesses the HTML if required
-  * request _(HttpRequest)_
-  * Returns _(Stream)_ : a stream of HTML which can be piped to `response`
-
-
-## Tutorial
-
-This is a step-by-step tutorial which shows you how each component of SocketStream can be combined together.
-
-Tip: Create a new directory and a new file called `app.js`. Copy and paste each example to follow along.
-
-
-#### 1. Web Servers 101
-
-Let's start with the most basic web server you can build with Node:
-
-```js
-var http = require('http')
-
-var server = http.createServer(function (req, res) {
-  res.writeHead(200, {'Content-Type': 'text/plain'});
-  res.end('Hello World\n');
-}).listen(3000, '127.0.0.1');
-
-console.log('Server running at http://127.0.0.1:3000/');
-```
-
-Nice and simple. But how do we go from this to a web server that can send different HTML, JS and CSS depending upon the URL and device connecting?
-
-At the very heart of SocketStream is the concept of Single Page Clients.
-
-While you may easily combine SocketStream with other multi-page frameworks, SocketStream is **only** concerned with delivering all the CSS, JS, HTML and Client-side Templates a single page app needs in one go (though we will support optional async loading of assets later on, as we did in 0.3).
-
-
-#### 2. Defining a Single Page Client
-
-Let's create a new SocketStream app and define our first Single Page Client:
-
-```js
-var http = require('http'),
-    SocketStream = require('socketstream'),
-    app = SocketStream();
-
-// Define a Single Page Client
-var mainClient = app.client('main.html');
-
-// Start the HTTP server
-var server = http.createServer(function (req, res) {
-  mainClient.html().pipe(res)
-}).listen(3000, '127.0.0.1');
-
-console.log('Server running at http://127.0.0.1:3000/');
-```
-
-Here we have:
-  
-  1. Created a new Single Page Client based upon the HTML found in 'main.html'
-  2. Piped the raw HTML to the HTTP `res` (response) object
-
-To try this example, create a file called `main.html` in your project directory, and paste in the following:
-
-```html
-<html>
-  <head>
-    <title>SocketStream Tutorial</title>
-  </head>
-  <body>
-    <h1>Hello World!</h1>
-  </body>
-</html>
-```
-
-Then run your app with `node app.js` and visit `http://localhost:3000`. You should see Hello World! on the screen.
-
-By creating multiple Single Page Client's you're able to easily serve different assets to different devices, or on different URLs, without duplicating files. 
-
-
-#### 3. Delivering Assets
-
-HTML is all well and good, but a Single Page App needs CSS, client-side JS, and other assets to function.
-
-These can be defined by passing an object to the second argument of `app.client()` containing a list of files to be sent whenever this client is served.
-
-SocketStream ensures assets are loaded in the most optimal order, allowing files to be easily debugged in development and packed & cached in production (yet to be implemented in 0.4).
-
-Update your code now to include a CSS file called `main.css`:
-
-```js
-// Define a Single Page Client
-var mainClient = app.client('main.html', {
-  css: ['main.css']
-});
-```
-
-And create the `main.css` file in your project directory:
-
-```css
-body {
-  background-color: #BBBBFF;
-  font-family: sans-serif;
-}
-```
-
-List as many CSS files as you want. If you pass the name of a directory, all files inside will be served alphanumerically.
-
-We're almost done, but we need to tell SocketStream to:
-
-1. Inject asset tags into the HTML view (in the most optimal order)
-2. Watch out for incoming requests for asset files and serve them
-
-Hence our final code now looks like:
-
-```js
-var http = require('http'),
-    SocketStream = require('socketstream'),
-    app = SocketStream();
-
-// Define a Single Page Client
-var mainClient = app.client('main.html', {
-  css: ['main.css']
-});
-
-// Start the HTTP server
-var server = http.createServer(function (req, res) {
-
-  if (req.url === '/') {
-    mainClient.html()
-      .pipe(mainClient.injectAssetTags())
-      .pipe(res);
-  } else {
-    app.serveAssets(req).pipe(res);
-  }
-
-}).listen(3000, '127.0.0.1');
-
-console.log('Server running at http://127.0.0.1:3000/');
-```
-
-Run `node app.js` again and note the pale blue background color.
-
-
-#### 4. Streams Everywhere!
-
-Before we clean up this code, it's worth stating that Single Page Clients output data in the form of standard Node Streams.
-
-This means you can easily pipe() the HTML to another output interface:
-
-```js
-mainClient.html().pipe(process.stdout);  // outputs the HTML to the terminal
-```
-
-Or pipe it through code pre-processors:
-
-```js
-var jade = require('jade-stream'); // a simple streaming wrapper around Jade
-mainClient.html().pipe(jade()).pipe(res);
-```
-
-Or even gzip the output. Altogether now:
-
-```js
-var jade = require('jade-stream'),
-    oppressor = require('oppressor'); // thanks SubStack!
-
-var server = http.createServer(function (req, res) {
-
-  mainClient.html()
-    .pipe(jade())
-    .pipe(mainClient.injectAssetTags())
-    .pipe(oppressor(req))
-    .pipe(res);
-
-}).listen(3000, '127.0.0.1');
-```
-
-So if you need this level of ultra-fine grain control for your app, you'll always have it.
-
-
-#### 5. Tidying Up
-
-As pre-processing and gzip compression are things we believe are **essential for every web app**, we've created a nifty helper method called `view()` which does this all for you, in the right order, automatically.
-
-```js
-var http = require('http'),
-    SocketStream = require('socketstream'),
-    app = SocketStream();
-
-// Define Code Preprocessors
-app.preprocessor('jade', require('./jade-stream')());
-
-// Define a Single Page Client
-var mainClient = app.client('main.jade', {  // note we're using Jade in this example
-  css: ['main.css']
-});
-
-// Start the HTTP server
-var server = http.createServer(function (req, res) {
-
-  if (req.url === '/') {
-    mainClient.view(req).pipe(res);
-  } else {
-    app.serveAssets(req).pipe(res);
-  }
-
-}).listen(3000, '127.0.0.1');
-
-console.log('Server running at http://127.0.0.1:3000/');
-```
-
-Note the new `app.preprocessor()` command. Here we're telling SocketStream to always stream the output of `.jade` files through the `jade-stream` module (a simple wrapper we've built until Jade supports Streams), thus outputting HTML.
-
-
-#### 6. HTTP Routing
-
-Let's continue cleaning things up by introducing the basic HTTP router that's included in SocketStream.
-
-You don't have to use it (feel free to use Express, mapleTree or another module for routing), but the SocketStream router provides a handy feature you're going to need to build a modern Single Page App: support for HTML5 PushState routing.
-
-Let's assume you have defined two Single Page Clients `mainClient` and `adminClient`. You'd like `mainClient` to be served when visitors hit the root URL `/` and the internal `adminClient` if you visit `/admin`.
-
-We can define these routes with the `app.route()` command as so:
-
-```js
-app.route('/', mainClient);
-app.route('/admin', adminClient);
-```
-
-To ensure your app can make full use of PushState routing (as used by the Backbone Router), incoming URLs will be recursively matched until the correct route is found. E.g. a request for `/admin/products/123` will correctly serve the `/admin` client.
-
-Let's wire this up by passing the `app.router()` function to `http.createServer()`. The completed code looks like:
-
-```js
-var http = require('http'),
-    SocketStream = require('socketstream'),
-    app = SocketStream();
-
-// Define a Single Page Client
-var mainClient = app.client('main.html', {
-  css: ['main.css']
-});
-
-// Define Routes
-app.route('/', mainClient);
-
-// Start the HTTP server
-var server = http.createServer(app.router()).listen(3000, '127.0.0.1');
-
-console.log('Server running at http://127.0.0.1:3000/');
-```
-
-Note: `app.router()` will automatically send requests through to `app.serveAssets()` if a main route cannot be found.
-
-Finally, how can we serve a different client depending upon the connecting device? Simply pass a function as so:
-
-```js
-app.route('/', function(req, res){
-  if (req.headers['user-agent'].match(/iPad/)) {
-    ipadClient.view().pipe(res);
-  } else {
-    mainClient.view().pipe(res);
-  }
-});
-```
-
-
-#### 7. Coming soon
-
-That's all for now. I'm building the API Guide and Tutorial bit by bit as each section is complete and I'm reasonably happy with the API.
+Updated versions coming soon. See the example app for now.
 
 
 ## FAQs
@@ -454,7 +100,7 @@ SockJS is just a websocket transport with fallbacks. You can use it with SocketS
 
 **Q: Can I use SocketStream with PhoneGap?**
 
-Yes. You will probably need to use (Persist.js)[https://github.com/jeremydurham/persist-js] to handle the sessions cookies. We've not tried this ourselves yet, but when we do we'll publish a full guide.
+Yes. You will probably need to use [Persist.js](https://github.com/jeremydurham/persist-js) to handle the sessions cookies. We've not tried this ourselves yet, but when we do we'll publish a full guide.
 
 
 **Q: What are the major changes since 0.3?**

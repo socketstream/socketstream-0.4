@@ -1,9 +1,0 @@
-{
-  "name": "ss-rate-limiter",
-  "description": "Restricts the flow of requests into SocketStream Server",
-  "version": "0.0.1",
-  "author": "Owen Barnes <owen@socketstream.org>",
-  "engines": { "node": ">= 0.10.0" },
-  "dependencies": {
-  }
-}

@@ -1,0 +1,13 @@
+{
+  "name": "prism-client",
+  "description": "Connect to a Prism realtime server",
+  "version": "0.0.1",
+  "author": "Owen Barnes <owen@socketstream.org>",
+  "engines": { "node": ">= 0.10.0" },
+  "dependencies": {
+    "realtime-service-client": "~0.0.1"
+  },
+  "scripts": {
+    "build-docs": "echo \"# Prism Client API\n\" > API.md; dox --api < index.js >> API.md"
+  }
+}

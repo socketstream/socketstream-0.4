@@ -5,12 +5,6 @@
 // Listen out for newMessage events coming from the server
 ss.pubsub.on('newMessage', function(message) {
 
-  // Example of using the Hogan Template in client/templates/chat/message.jade to generate HTML for each message
-  // var html = ss.tmpl['chat-message'].render({
-  //   message: message,
-  //   time: function() { return timestamp(); }
-  // });
-
   // Templates not implemented yet so we're just doing basic string concat for now
   var html = '<p><span class="time">' + timestamp() + '</span><span class="message">' + message + '</span></p>'
 

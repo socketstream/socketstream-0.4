@@ -1,0 +1,12 @@
+{
+  "name": "spa",
+  "description": "Single Page Application asset builder",
+  "version": "0.0.1",
+  "author": "Owen Barnes <owen@socketstream.org>",
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "dependencies": {
+    "html-tag-injector": "~0.0.1"
+  }
+}

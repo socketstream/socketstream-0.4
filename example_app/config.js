@@ -6,30 +6,30 @@
 
 */
 
-var SocketStream = require('../socketstream')();
+var SocketStream = require('../');
 
 module.exports = function(){
 
-  var app = SocketStream;
+  var app = SocketStream({port: 3001});
 
   // Log to console
   app.log.debug = console.log;
 
-  // Setup Websocket Transport
-  //app.transport(require('rtt-engineio')({port: 3001}));
-  //app.transport(require('rtt-sockjs')({port: 3001}));
-  app.transport(require('rtt-ws')({port: 3001}));
+  // Select a Realtime (WebSocket) Transport
+  app.transport(require('rtt-engine.io')());
+  //app.transport(require('rtt-sockjs')());
+  //app.transport(require('rtt-ws')());
 
   // Define Realtime Services to run over the websocket
-  app.server.service('livereload', require('rts-livereload')());
-  app.server.service('pubsub', require('rts-pubsub')());
-  app.server.service('rpc', require('rts-rpc')());
+  app.service('livereload', require('rts-livereload')());
+  app.service('pubsub', require('../mods/rts-pubsub')());
+  app.service('rpc', require('../mods/rts-rpc')());
  
   // Example Stream Service (requires Node 0.10 so disabled by default)
   //server.service('tweetStream', require('rts-stream')());
 
   // Realtime Services are *just* objects, so you can easily define your own
-  app.server.service('square', {
+  app.service('square', {
 
     use: {callbacks: true},
 
@@ -38,7 +38,7 @@ module.exports = function(){
       // invoke this function with ss.square() on the client
       return function(question) {
         client.send(question, function(answer){
-          alert(answer);
+          console.log(answer);
         });
       };
 
@@ -58,7 +58,7 @@ module.exports = function(){
   
   // Use Rate Limiting Middleware
   // (to prevent one client from flooding the server with requests)
-  app.server.use(require('ss-rate-limiter')());
+  app.use(require('prism-rate-limiter')());
 
   return app;
 

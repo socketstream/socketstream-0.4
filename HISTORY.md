@@ -1,6 +1,17 @@
 WARNING: At this point *everything* is in flux and may change - drastically.
 Generally the `/example_app` should always be working.
 
+0.4.0experimental6 / 2013-04-20
+===============================
+
+* Started spinning out modules into seperate repos and `npm` packages.
+* SocketStream Server is now called Prism
+* Prism can now build a custom browser client depending upon transport and services selected
+* A lot of the client asset stuff has been moved into a new module called Spa (very much unfinished yet)
+* Updated Readme. Removed tutorial and API Guide for now as it was outdated
+
+
+
 0.4.0experimental5 / 2013-04-11
 ===============================
 

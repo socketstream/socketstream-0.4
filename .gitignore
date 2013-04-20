@@ -4,4 +4,4 @@ dump.rdb
 npm-debug.log
 *.tgz
 *.swp
-example_app/client/app/system.js
+example_app/client/app/client.js
