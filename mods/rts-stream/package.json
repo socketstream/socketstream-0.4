@@ -1,10 +1,14 @@
 {
   "name": "rts-stream",
-  "description": "Node Stream API Wrapper - Realtime Service",
+  "description": "Node Stream API wrapper Realtime Service",
   "version": "0.0.1",
-  "author": "Me <me@mydomain.com>",
-  "private": true,
-  "engines": { "node": ">= 0.9.0" },
+  "author": "Owen Barnes <owen@socketstream.org>",
+  "engines": {
+    "node": ">= 0.8.0"
+  },
   "dependencies": {
-  }
+    "colors": "~0.6.0-1",
+  },
+  "devDependencies": {
+  }  
 }

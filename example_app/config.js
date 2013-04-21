@@ -1,8 +1,7 @@
 /*
 
-  Since both the Asset Server and Realtime Server need to know about the
-  websocket Transport and Services (so client-side code can be sent and
-  wired up), this config must be shared
+  Since both the Asset Server and Realtime Server need to know about the websocket
+  Transport and Services this config must be shared between both processes
 
 */
 
@@ -22,11 +21,11 @@ module.exports = function(){
 
   // Define Realtime Services to run over the websocket
   app.service('livereload', require('rts-livereload')());
-  app.service('pubsub', require('../mods/rts-pubsub')());
-  app.service('rpc', require('../mods/rts-rpc')());
+  app.service('pubsub', require('rts-pubsub')());
+  app.service('rpc', require('rts-rpc')());
  
   // Example Stream Service (requires Node 0.10 so disabled by default)
-  //server.service('tweetStream', require('rts-stream')());
+  //server.service('tweetStream', require('../mods/rts-stream')());
 
   // Realtime Services are *just* objects, so you can easily define your own
   app.service('square', {

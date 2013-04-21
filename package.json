@@ -1,7 +1,7 @@
 {
   "name":         "socketstream-0.4",
   "description":  "A fast, streaming Node.js framework dedicated to building realtime single-page apps",
-  "version":      "0.4.0experimental6",
+  "version":      "0.4.0experimental7",
   "homepage":     "http://www.socketstream.org",
   "author":       "Owen Barnes <owen@socketstream.org>",
   "repository": {
@@ -20,10 +20,9 @@
   ],
   "dependencies": {
     "colors":           "= 0.6.x",
-    "uglify-js":        "= 2.2.x",
-    "oppressor":        "= 0.0.x",
     "filed":            "= 0.0.x",
-    "browserify":       "= 2.5.1"
+    "browserify":       "= 2.5.1",
+    "prism":            "= 0.0.1"
   },
   "devDependencies": {
     "mocha":            "= 1.2.1",
@@ -32,7 +31,6 @@
   "scripts": {
     "test": "node_modules/.bin/mocha test"
   },
-  "directories":  { "lib": "./lib", "doc": "./doc" },
   "main":         "./index.js",
-  "engines":      { "node": ">= 0.10.0" }
+  "engines":      { "node": ">= 0.8.0" }
 }

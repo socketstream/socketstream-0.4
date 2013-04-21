@@ -1,6 +1,13 @@
 WARNING: At this point *everything* is in flux and may change - drastically.
 Generally the `/example_app` should always be working.
 
+0.4.0experimental7 / 2013-04-21
+===============================
+
+* Polished up some more modules and moved them out into a separate repo
+
+
+
 0.4.0experimental6 / 2013-04-20
 ===============================
 

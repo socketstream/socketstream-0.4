@@ -16,6 +16,13 @@
 
 var spawn = require('child_process').spawn;
 
+function start(childProcess) {
+  childProcess.stdin.end();
+  childProcess.stderr.pipe(process.stderr);
+  childProcess.stdout.pipe(process.stdout);
+}
+
+
 // Choose between a standalone asset server or Express-based server
 var assetServer = spawn('node', ['scripts/asset_server']);
 //var assetServer = spawn('node', ['scripts/express_example']);
@@ -23,18 +30,11 @@ var assetServer = spawn('node', ['scripts/asset_server']);
 // The Realtime (Websocket Server) which runs on a different port
 var realtimeServer = spawn('node', ['scripts/realtime_server']);
 
-
 // Start the asset server
 console.log('Starting Asset Server...');
-startServer(assetServer);
+start(assetServer);
 
 // Always Start the Realtime/Websocket Server
 console.log('Starting Realtime Server...');
-startServer(realtimeServer);
+start(realtimeServer);
 
-
-function startServer(childProcess) {
-  childProcess.stdin.end();
-  childProcess.stderr.pipe(process.stderr);
-  childProcess.stdout.pipe(process.stdout);
-}

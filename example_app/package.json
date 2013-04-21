@@ -15,6 +15,7 @@
     "rts-livereload": "~0.0.1",
     "rts-rpc": "~0.0.1",
     "rts-pubsub": "~0.0.1",
+    "prism-client": "~0.0.1",
     "prism-rate-limiter": "~0.0.1",
     "jade": "~0.29.0",
     "nib": "~0.9.1",

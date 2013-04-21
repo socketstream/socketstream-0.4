@@ -10,7 +10,7 @@
 var fs = require('fs'),
     path = require('path'),
     EventEmitter = require('events').EventEmitter,
-    prism = require('./mods/prism'),
+    prism = require('prism'),
     SinglePageApp = require('./mods/spa'),
     Router = require('./mods/pushstate-router');
 
