@@ -13,6 +13,7 @@
 
 var fs = require('fs');
 var path = require('path');
+var url = require('url');
 var browserify = require('browserify');
 var view = require('./view');
 
@@ -114,7 +115,8 @@ SPA.prototype.middleware = function(req, res, next) {
   // Only serve requests for us
   if (req.url.substr(0, 6) !== '/_dev/') return next();
   
-  var urlAry = req.url.split('/').splice(2);
+  var safeUrl = url.parse(req.url).pathname;
+  var urlAry = safeUrl.split('/').splice(2);
   var assetType = urlAry.shift();
 
   var serve = function(err, body) {
