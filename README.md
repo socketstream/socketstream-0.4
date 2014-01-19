@@ -18,7 +18,7 @@ I apologise to those who have been waiting for 0.4 to be completed, and to those
 
 For those who have built on top of 0.4, I recommend using the current version of SocketStream instead.
 
-If anyone has any other queries or concerns, please contact at at paul@socketstream.com
+If anyone has any other queries or concerns, please contact me at paul@socketstream.com
 
 Paul Jensen
 19th January 2014
