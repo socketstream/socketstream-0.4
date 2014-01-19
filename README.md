@@ -1,10 +1,27 @@
-# SocketStream 0.4
+# SocketStream 0.4 (cancelled - please use the main version)
 
 **Current Status: Pre-alpha**
 
 SocketStream is a Node.js Realtime Web Framework with a focus on high performance and extensibility.
 
 [View Latest Changes](https://github.com/socketstream/socketstream-0.4/blob/master/HISTORY.md)
+
+## January 2014 Update
+
+After some discussion, I have decided that SocketStream 0.4 will be cancelled, and that all development of SocketStream will continue in the current 0.3 branch.
+
+The reason is because trying to rewrite SocketStream in the 0.4 repository at the same time as support the current version of SocketStream (0.3) is unfeasible.
+
+Instead, the plan will be to make all feature work for SocketStream happen in the socketstream/socketstream branch.
+
+I apologise to those who have been waiting for 0.4 to be completed, and to those who have been hesitant to use SocketStream because of the previous release plan.
+
+For those who have built on top of 0.4, I recommend using the current version of SocketStream instead.
+
+If anyone has any other queries or concerns, please contact at at paul@socketstream.com
+
+Paul Jensen
+19th January 2014
 
 
 ## April 2013 Update
